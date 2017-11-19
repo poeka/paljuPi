@@ -1,2 +1,2 @@
 # PaljuPi
-Simple project for using Raspberry Pi as a thermostat
+Simple project for using a Raspberry Pi as a thermostat
