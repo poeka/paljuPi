@@ -2,8 +2,8 @@ import os
 import glob
 import time
 
-os.system('modprobe w1-gpio')
-os.system('modprobe w1-therm')
+#os.system('modprobe w1-gpio')
+#os.system('modprobe w1-therm')
 
 class TempSensor:
     
@@ -20,6 +20,7 @@ class TempSensor:
         #tmp_data = tmp_text.split("\n")[1].split(" ")[9]
         #temperature = float(tmp_data[2:])
         #temperature = temperature / 1000
+        print("Succesfully read the temperature from the sensor.")
         return self.temperature
     
     def set_target(self, target_temperature):
@@ -28,6 +29,13 @@ class TempSensor:
     
     def get_target(self):
         return self.target
+
+    def is_warm(self):
+        self.get_temperature()
+        if self.temperature < self.target:
+            return False
+        else:
+            return True
         
     
     
