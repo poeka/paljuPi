@@ -1,13 +1,12 @@
 import time
-import temp
-
-
-temp = temp.TempSensor("12345")
+import pool
 
 
 while True:
+    
+    tub = pool.Pool()
 
-    if temp.is_warm():
+    if tub.is_warm():
 
         #Turn the relay OFF
 

@@ -10,7 +10,6 @@ class TempSensor:
     def __init__(self, sensor_id):
         self.sensor_id = sensor_id
         self.temperature = -100
-        self.target = 38
         
     def get_temperature(self):
         #tmp_file = open("/sys/bus/w1/" + self.sensor_id + "/w1_slave")
@@ -22,20 +21,7 @@ class TempSensor:
         #temperature = temperature / 1000
         print("Succesfully read the temperature from the sensor.")
         return self.temperature
-    
-    def set_target(self, target_temperature):
-        self.target = target_temperature
-        return
-    
-    def get_target(self):
-        return self.target
 
-    def is_warm(self):
-        self.get_temperature()
-        if self.temperature < self.target:
-            return False
-        else:
-            return True
         
     
     
