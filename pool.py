@@ -8,28 +8,65 @@ class Pool:
     def __init__(self):
         
         self.target = 38
-        self.total_temperature = 0
-        self.temp1 = temp.TempSensor("12345") #Sensors ID's
-        self.temp2 = temp.TempSensor("23456")
-        
+        self.lower_limit = 36
+        self.total_temperature = -85
+        self.temp_low = temp.TempSensor("28-0517a04776ff") # Lower
+        self.low_value = -85
+        self.temp_high = temp.TempSensor("28-000008a5dd2c")  # Upper
+        self.high_value = -85
+        self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
+        self.ambient_value = -85
+        self.heating_state = "ON"  # ON/OFF/UPKEEP/FORCEOFF
 
-    def get_temp1(self):
-        return self.temp1.get_temperature()
-    
-    def get_temp2(self):
-        return self.temp2.get_temperature()
-    
-    
-    def get_temperature(self):
-        self.total_temperature = (self.temp1.get_temperature() + self.temp2.get_temperature()) / 2
-        return self.total_temperature
-    
-    def is_warm(self):     
-        if self.get_temperature() >= self.target:
-            return True
-        else:
+    def get_temp_low(self):
+
+        if self.low_value is False:
             return False
-        
 
-        
-        
+        else:
+            return self.low_value
+
+    def get_temp_high(self):
+
+        if self.high_value is False:
+            return False
+
+        else:
+            return self.high_value
+
+    def get_ambient(self):
+
+        if self.ambient_value is False:
+            return False
+
+        else:
+            return self.ambient_value
+    
+    def get_temperatures(self):
+
+        self.low_value = self.temp_low.get_temperature()
+        self.high_value = self.temp_high.get_temperature()
+        self.ambient_value = self.temp_ambient.get_temperature()
+
+        if self.low_value is False:
+            return False
+
+        elif self.high_value is False:
+            return False
+
+        elif self.ambient_value is False:
+            return False
+
+        return True
+
+    def set_target(self, target):
+        self.target = target
+
+    def get_target(self):
+        return self.target
+
+    def set_state(self, state):
+        self.heating_state = state
+
+    def get_state(self):
+        return self.heating_state
