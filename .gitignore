@@ -1,4 +1,4 @@
 # Gitignore file
 
 __pycache__
-./testScripts
+/testScripts
