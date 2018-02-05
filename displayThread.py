@@ -18,6 +18,3 @@ class DisplayThread(threading.Thread):
             # Remember to use get_temp1 and get_temp2
             print("Drawing to display")
             time.sleep(1)
-
-
-

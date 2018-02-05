@@ -1,7 +1,7 @@
-import RPi.GPIO as GPIO
+import floatSwitch
 import pool
 import relay
-import floatSwitch
+import RPi.GPIO as GPIO
 import socketClient
 
 GPIO.setmode(GPIO.BOARD)
@@ -18,6 +18,8 @@ while True:
 
         relay.toggle_off()
 
+        pool.set_state("OFF")
+
         pool.get_temperatures()
 
         continue
@@ -27,19 +29,20 @@ while True:
         if pool.get_state() == "FORCEOFF":
             continue
 
-        elif pool.get_state() == "ON":
+        elif pool.get_state() == "ON" or "OFF":
 
             if pool.get_temperatures() is False:
 
                 print("Error reading the temperatures")
                 continue
 
-            elif pool.high_value < pool.get_target():
+            elif pool.get_temp_high() < pool.get_target():
 
                 relay.toggle_on()
+                pool.set_state("ON")
                 continue
 
-            elif pool.high_value >= pool.get_target():
+            elif pool.get_temp_high() >= pool.get_target():
 
                 relay.toggle_off()
                 pool.set_state("UPKEEP")
@@ -51,13 +54,8 @@ while True:
                 print("Error reading the temperatures")
                 continue
 
-            elif pool.high_value <= pool.lower_limit:
+            elif pool.get_temp_high() <= pool.lower_limit:
 
                 relay.toggle_on()
                 pool.set_state("ON")
                 continue
-
-
-
-
-

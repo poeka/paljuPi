@@ -1,5 +1,5 @@
-import os
 import glob
+import os
 import temp
 
 
@@ -7,16 +7,16 @@ class Pool:
 
     def __init__(self):
         
-        self.target = 38
+        self.target = 37.3
         self.lower_limit = 36
         self.total_temperature = -85
-        self.temp_low = temp.TempSensor("28-0517a04776ff") # Lower
+        self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
         self.temp_high = temp.TempSensor("28-000008a5dd2c")  # Upper
         self.high_value = -85
         self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
-        self.heating_state = "ON"  # ON/OFF/UPKEEP/FORCEOFF
+        self.heating_state = "OFF"  # ON/OFF/UPKEEP/FORCEOFF
 
     def get_temp_low(self):
 
@@ -70,3 +70,9 @@ class Pool:
 
     def get_state(self):
         return self.heating_state
+
+    def set_lower_limit(self, lower_limit):
+        self.lower_limit = lower_limit
+
+    def get_lower_limit(self):
+        return self.lower_limit
