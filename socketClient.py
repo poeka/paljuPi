@@ -16,16 +16,17 @@ class SocketThread(threading.Thread):
     def message_handler(self, message):
         data = json.dumps(message)
 
-        if self.pool.get_state() == "FORCEOFF":
+        if self.pool.get_state() == "FOFF":
             if data["warming_phase"] == "ON":
                 self.pool.set_state("ON")
 
-        elif data["warming_phase"] == "FORCEOFF":
-            if self.pool.get_state() != "FORCEOFF":
-                self.pool.set_state("FORCEOFF")
+        elif data["warming_phase"] == "FOFF":
+            if self.pool.get_state() != "FOFF":
+                self.pool.set_state("OFF")
 
         self.pool.set_target(data["temp_target"])
         self.pool.set_lower_limit(data["temp_low_limit"])
+        self.pool.set.estimate(data["estimation"])
 
 
     async def send(self):
@@ -33,7 +34,7 @@ class SocketThread(threading.Thread):
             while True:
                 data = json.dumps({"temp_low": self.pool.get_temp_low(),
                                    "temp_high": self.pool.get_temp_high(),
-                                   "temp_ambient": self.pool.get_ambient(),
+                                   "temp_ambient": self.pool.get_temp_ambient(),
                                    "warming_phase": self.pool.get_state(),
                                    "temp_target": self.pool.get_target(),
                                    "temp_low_limit": self.pool.get_lower_limit(),

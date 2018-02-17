@@ -44,9 +44,9 @@ class Pool:
     
     def get_temperatures(self):
 
-        self.low_value = self.temp_low.get_temperature()
-        self.high_value = self.temp_high.get_temperature()
-        self.ambient_value = self.temp_ambient.get_temperature()
+        self.low_value = round(self.temp_low.get_temperature(),1)
+        self.high_value = round(self.temp_high.get_temperature(),1)
+        self.ambient_value = round(self.temp_ambient.get_temperature(),1)
 
         if self.low_value is False:
             return False
