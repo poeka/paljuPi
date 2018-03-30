@@ -14,41 +14,41 @@ class SocketThread(threading.Thread):
         self.isRunning = True
 
     def message_handler(self, message):
-        data = json.dumps(message)
+
+        # TODO: can this throw?
+        data = json.loads(message)
 
         if self.pool.get_state() == "FOFF":
             if data["warming_phase"] == "ON":
                 self.pool.set_state("ON")
 
         elif data["warming_phase"] == "FOFF":
-            if self.pool.get_state() != "FOFF":
-                self.pool.set_state("OFF")
+            self.pool.set_state("FOFF")
 
-        self.pool.set_target(data["temp_target"])
-        self.pool.set_lower_limit(data["temp_low_limit"])
-        self.pool.set.estimate(data["estimation"])
-
+        self.pool.set_target(data["target"])
+        self.pool.set_lower_limit(data["low_limit"])
+        # self.pool.set.estimate(data["estimation"])
 
     async def send(self):
         async with websockets.connect('ws://89.106.38.236:3000') as websocket:
             while True:
-                data = json.dumps({"temp_low": self.pool.get_temp_low(),
-                                   "temp_high": self.pool.get_temp_high(),
-                                   "temp_ambient": self.pool.get_temp_ambient(),
-                                   "warming_phase": self.pool.get_state(),
-                                   "temp_target": self.pool.get_target(),
-                                   "temp_low_limit": self.pool.get_lower_limit(),
-                                   "timestamp": int(time.time())})
+
+                data = json.dumps({
+                    "temp_low": self.pool.get_temp_low(),
+                    "temp_high": self.pool.get_temp_high(),
+                    "temp_ambient": self.pool.get_temp_ambient(),
+                    "warming_phase": self.pool.get_state(),
+                    "target": self.pool.get_target(),
+                    "low_limit": self.pool.get_lower_limit()
+                })
+
                 await websocket.send(data)
-                await asyncio.sleep(30)
+                await asyncio.sleep(10)
 
     async def receive(self):
         async with websockets.connect('ws://89.106.38.236:3000') as websocket:
             while True:
-
-                message = await websocket.recv()
-                print(message)
-                self.message_handler(message)
+                self.message_handler(await websocket.recv())
 
 
     def run(self):

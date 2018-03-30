@@ -16,31 +16,28 @@ class Pool:
         self.high_value = -85
         self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
-        self.heating_state = "OFF"  # ON/OFF/UPKEEP/FORCEOFF
+        self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
 
     def get_temp_low(self):
 
         if self.low_value is False:
             return False
 
-        else:
-            return self.low_value
+        return self.low_value
 
     def get_temp_high(self):
 
         if self.high_value is False:
             return False
 
-        else:
-            return self.high_value
+        return self.high_value
 
-    def get_ambient(self):
+    def get_temp_ambient(self):
 
         if self.ambient_value is False:
             return False
 
-        else:
-            return self.ambient_value
+        return self.ambient_value
     
     def get_temperatures(self):
 

@@ -1,6 +1,6 @@
 # Gitignore file
 
-.pyc
+*.pyc
 .idea
 .vscode
 __pycache__
