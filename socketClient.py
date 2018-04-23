@@ -8,10 +8,12 @@ import pool
 
 class SocketThread(threading.Thread):
 
-    def __init__(self, pool):
+    def __init__(self, pool, path):
         threading.Thread.__init__(self)
         self.pool = pool
         self.isRunning = True
+        self.data_array = []
+        self.log_file = open(path, 'w')
 
     def message_handler(self, message):
 
@@ -31,25 +33,26 @@ class SocketThread(threading.Thread):
 
     async def send(self):
         async with websockets.connect('ws://89.106.38.236:3000') as websocket:
-            while True:
-
-                data = json.dumps({
-                    "temp_low": self.pool.get_temp_low(),
-                    "temp_high": self.pool.get_temp_high(),
-                    "temp_ambient": self.pool.get_temp_ambient(),
-                    "warming_phase": self.pool.get_state(),
-                    "target": self.pool.get_target(),
-                    "low_limit": self.pool.get_lower_limit()
-                })
-
-                await websocket.send(data)
-                await asyncio.sleep(10)
+            while len(self.data_array) > 0:
+                await websocket.send(self.data_array.pop)
 
     async def receive(self):
         async with websockets.connect('ws://89.106.38.236:3000') as websocket:
             while True:
                 self.message_handler(await websocket.recv())
 
+    async def get_data(self):
+        data = json.dumps({
+                "temp_low": self.pool.get_temp_low(),
+                "temp_high": self.pool.get_temp_high(),
+                "temp_ambient": self.pool.get_temp_ambient(),
+                "warming_phase": self.pool.get_state(),
+                "target": self.pool.get_target(),
+                "low_limit": self.pool.get_lower_limit()
+                })
+        self.data_array.append(data)     # Append the data to an array, websocket sends data from this array
+        self.log_file.write(data + '\n') # Write the data also to a file
+        await asyncio.sleep(30)
 
     def run(self):
         while self.isRunning:
@@ -59,6 +62,7 @@ class SocketThread(threading.Thread):
                 loop.run_until_complete(asyncio.gather(
                     self.send(),
                     self.receive(),
+                    self.get_data(),
                 ))
                 loop.close()
 

@@ -1,74 +1,65 @@
-import floatSwitch
 import pool
-import relay
 import RPi.GPIO as GPIO
 import socketClient
 import time
+import datetime
+import os
 
 GPIO.setmode(GPIO.BOARD)
-relay = relay.Relay()
-floatSwitch = floatSwitch.FloatSwitch()
 pool = pool.Pool()
 
-socket = socketClient.SocketThread(pool)
+date = datetime.datetime.now().strftime("%Y-%m-%d")
+path = "/home/pi/Documents/paljuPi/logs/"+date+"/log.txt" # Path for a log file 
+os.makedirs(os.path.dirname(path), exist_ok=True)
+
+socket = socketClient.SocketThread(pool, path)
 socket.start()
 
 while True:
 
-    if floatSwitch.get_state() == 0:
+    if pool.floatSwitch.get_state() == 0:
 
-        relay.toggle_off()
-
-        pool.set_state("OFF")
+        if pool.get_state() != "FOFF"
+            pool.set_state("OFF")
 
         pool.get_temperatures()
-
         continue
 
-    elif floatSwitch.get_state() == 1:
+    elif pool.floatSwitch.get_state() == 1:
 
         if pool.get_state() == "FOFF":
-            relay.toggle_off()
             continue
 
         elif pool.get_state() == "ON":
-
+            
             if pool.get_temperatures() is False:
-
                 print("Error reading the temperatures")
                 continue
 
             elif pool.get_temp_high() < pool.get_target():
-
-                relay.toggle_on()
+                pool.set_state("ON")
                 continue
 
             elif pool.get_temp_high() >= pool.get_target():
-
-                relay.toggle_off()
                 pool.set_state("UPKEEP")
                 continue
 
         elif pool.get_state() == "UPKEEP":
-            if pool.get_temperatures() is False:
 
+            if pool.get_temperatures() is False:
                 print("Error reading the temperatures")
                 continue
 
-            elif pool.get_temp_high() <= pool.lower_limit:
-
-                relay.toggle_on()
+            elif pool.get_temp_high() <= pool.get_lower_limit:
                 pool.set_state("ON")
                 continue
 
         elif pool.get_state() == "OFF":
+            
             if pool.get_temperatures() is False:
-
                 print("Error reading the temperatures")
                 continue
 
-            elif pool.get_temp_high() <= pool.lower_limit:
-
-                relay.toggle_on()
+            elif pool.get_temp_high() <= pool.get_lower_limit:
                 pool.set_state("ON")
                 continue
