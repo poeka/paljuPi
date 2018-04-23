@@ -8,7 +8,6 @@ import relay
 class Pool:
 
     def __init__(self):
-        
         self.target = 38.0
         self.lower_limit = 36.0
         self.total_temperature = -85
@@ -23,7 +22,6 @@ class Pool:
         self.floatSwitch = floatSwitch.FloatSwitch()
 
     def get_temp_low(self):
-
         if self.low_value is False:
             return False
 
@@ -42,12 +40,11 @@ class Pool:
             return False
 
         return self.ambient_value
-    
-    def get_temperatures(self):
 
-        self.low_value = round(self.temp_low.get_temperature(),1)
-        self.high_value = round(self.temp_high.get_temperature(),1)
-        self.ambient_value = round(self.temp_ambient.get_temperature(),1)
+    def get_temperatures(self):
+        self.low_value = round(self.temp_low.get_temperature(), 1)
+        self.high_value = round(self.temp_high.get_temperature(), 1)
+        self.ambient_value = round(self.temp_ambient.get_temperature(), 1)
 
         if self.low_value == 0:
             return False
@@ -64,7 +61,7 @@ class Pool:
         return self.heating_state
 
     def set_state(self, state):
-        
+
         if state == "OFF":
             self.relay.toggle_off()
             self.heating_state = state
@@ -80,7 +77,7 @@ class Pool:
             self.heating_state = state
             return
 
-        elif state == "UPKEEP"
+        elif state == "UPKEEP":
             self.relay.toggle_off()
             self.heating_state = state
             return
@@ -96,5 +93,3 @@ class Pool:
 
     def set_lower_limit(self, lower_limit):
         self.lower_limit = lower_limit
-
-

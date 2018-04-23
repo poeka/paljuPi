@@ -9,17 +9,16 @@ GPIO.setmode(GPIO.BOARD)
 pool = pool.Pool()
 
 date = datetime.datetime.now().strftime("%Y-%m-%d")
-path = "/home/pi/Documents/paljuPi/logs/"+date+"/log.txt" # Path for a log file 
+path = "/home/pi/Documents/logs/"+date+"/log.txt"  # Path for a log file
 os.makedirs(os.path.dirname(path), exist_ok=True)
 
 socket = socketClient.SocketThread(pool, path)
 socket.start()
 
 while True:
-
     if pool.floatSwitch.get_state() == 0:
 
-        if pool.get_state() != "FOFF"
+        if pool.get_state() != "FOFF":
             pool.set_state("OFF")
 
         pool.get_temperatures()
@@ -31,7 +30,7 @@ while True:
             continue
 
         elif pool.get_state() == "ON":
-            
+
             if pool.get_temperatures() is False:
                 print("Error reading the temperatures")
                 continue
@@ -55,7 +54,7 @@ while True:
                 continue
 
         elif pool.get_state() == "OFF":
-            
+
             if pool.get_temperatures() is False:
                 print("Error reading the temperatures")
                 continue
