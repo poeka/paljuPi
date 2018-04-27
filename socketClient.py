@@ -33,8 +33,9 @@ class SocketThread(threading.Thread):
 
     async def send(self):
         async with websockets.connect('ws://89.106.38.236:3000') as websocket:
-            while len(self.data_array) > 0:
-                await websocket.send(self.data_array.pop)
+            while True:
+                while len(self.data_array) > 0:
+                    await websocket.send(self.data_array.pop)
 
     async def receive(self):
         async with websockets.connect('ws://89.106.38.236:3000') as websocket:
