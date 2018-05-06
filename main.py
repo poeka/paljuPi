@@ -59,6 +59,6 @@ while True:
                 print("Error reading the temperatures")
                 continue
 
-            elif pool.get_temp_high() <= pool.get_lower_limit:
+            elif pool.get_temp_high() <= pool.get_lower_limit():
                 pool.set_state("ON")
                 continue
