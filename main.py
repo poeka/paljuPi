@@ -4,15 +4,22 @@ import socketClient
 import time
 import datetime
 import os
+import configparser
+
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+date = datetime.datetime.now().strftime("%Y-%m-%d")
+path = config['logfile']['path'] + '/' + \
+    date + "/log.txt"  # Path for a log file
+os.makedirs(os.path.dirname(path), exist_ok=True)
+
+url = config['server']['url']
 
 GPIO.setmode(GPIO.BOARD)
 pool = pool.Pool()
-
-date = datetime.datetime.now().strftime("%Y-%m-%d")
-path = "/home/pi/Documents/logs/"+date+"/log.txt"  # Path for a log file
-os.makedirs(os.path.dirname(path), exist_ok=True)
-
-socket = socketClient.SocketThread(pool, path)
+socket = socketClient.SocketThread(pool, path, url)
 socket.start()
 
 while True:

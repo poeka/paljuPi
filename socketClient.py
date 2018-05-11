@@ -8,12 +8,13 @@ import pool
 
 class SocketThread(threading.Thread):
 
-    def __init__(self, pool, path):
+    def __init__(self, pool, path, url):
         threading.Thread.__init__(self)
         self.pool = pool
         self.isRunning = True
         self.data_array = []
         self.log_file = open(path, 'w')
+        self.url = url
 
     def message_handler(self, message):
 
@@ -32,13 +33,13 @@ class SocketThread(threading.Thread):
         # self.pool.set_estimate(data["estimation"])
 
     async def send(self):
-        async with websockets.connect('ws://89.106.38.236:3000') as websocket:
+        async with websockets.connect('ws://' + 'url') as websocket:
             while True:
                 while len(self.data_array) > 0:
                     await websocket.send(self.data_array.pop)
 
     async def receive(self):
-        async with websockets.connect('ws://89.106.38.236:3000') as websocket:
+        async with websockets.connect('ws://' + 'url') as websocket:
             while True:
                 self.message_handler(await websocket.recv())
 
