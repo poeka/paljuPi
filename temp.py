@@ -18,7 +18,6 @@ class TempSensor:
             tmp_data = tmp_text.split("\n")[1].split(" ")[9]
             temperature = float(tmp_data[2:])
             self.temperature = temperature / 1000
-            # print(self.temperature)
             return self.temperature
 
         except IOError:

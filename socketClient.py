@@ -54,6 +54,7 @@ class SocketThread(threading.Thread):
         # Append the data to an array, websocket sends data from this array
         self.data_array.append(data)
         self.log_file.write(data + '\n')  # Write the data also to a file
+        self.log_file.flush()
         await asyncio.sleep(30)
 
     def run(self):
