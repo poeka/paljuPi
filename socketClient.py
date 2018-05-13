@@ -44,7 +44,7 @@ class SocketThread(threading.Thread):
                 self.message_handler(await websocket.recv())
 
     async def get_data(self):
-        While True:
+        while True:
             await asyncio.sleep(30)
             data = json.dumps({
                 "temp_low": self.pool.get_temp_low(),
