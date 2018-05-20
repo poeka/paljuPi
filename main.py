@@ -5,6 +5,7 @@ import time
 import datetime
 import os
 import configparser
+import display
 
 
 config = configparser.ConfigParser()
@@ -21,6 +22,9 @@ GPIO.setmode(GPIO.BOARD)
 pool = pool.Pool()
 socket = socketClient.SocketThread(pool, path, url)
 socket.start()
+
+display = display.DisplayThread(pool)
+display.start()
 
 while True:
     if pool.floatSwitch.get_state() == 0:

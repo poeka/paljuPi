@@ -17,7 +17,7 @@ from time import *
 
 # some const
 # LCD Address
-LCD_ADDRESS = 0x3f
+LCD_ADDRESS = 0x27  # 3f or 27
 
 # commands
 LCD_CLEARDISPLAY = 0x01
@@ -118,7 +118,8 @@ class LCD:
         self.write_cmd(0x03)
         self.write_cmd(0x03)
         self.write_cmd(0x02)
-        self.write_cmd(LCD_FUNCTIONSET | LCD_2LINE | LCD_5x8DOTS | LCD_4BITMODE)
+        self.write_cmd(LCD_FUNCTIONSET | LCD_2LINE |
+                       LCD_5x8DOTS | LCD_4BITMODE)
         self.write_cmd(LCD_DISPLAYCONTROL | LCD_DISPLAYON)
         self.write_cmd(LCD_CLEARDISPLAY)
         self.write_cmd(LCD_ENTRYMODESET | LCD_ENTRYLEFT)
@@ -207,7 +208,8 @@ class LCD:
         :type state: bool
         """
         self._back_light = bool(state)
-        self._lcd_device.write_cmd(LCD_BACKLIGHT if self._back_light else LCD_NOBACKLIGHT)
+        self._lcd_device.write_cmd(
+            LCD_BACKLIGHT if self._back_light else LCD_NOBACKLIGHT)
 
     def load_custom_chars(self, font_data):
         """
