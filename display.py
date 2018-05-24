@@ -18,10 +18,14 @@ class DisplayThread(threading.Thread):
 
         while True:
 
-            self.lcd.set_cursor(row=0)
+            self.lcd.set_cursor(row=0, col=0)
             self.lcd.message(datetime.now().strftime('%H:%M:%S'))  # HH:MM:SS
 
             self.lcd.set_cursor(row=0, col=10)
             # Temperature formatted to one decimal
             self.lcd.message(format(self.pool.get_temp_high(),
+                                    '.1f') + chr(223) + "C ")
+
+            self.lcd.set_cursor(row=0, col=10)
+            self.lcd.message(format(self.pool.get_egt(),
                                     '.1f') + chr(223) + "C ")

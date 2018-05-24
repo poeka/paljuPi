@@ -3,6 +3,8 @@ import os
 import temp
 import floatSwitch
 import relay
+import RPi.GPIO as GPIO
+from max31855 import MAX31855, MAX31855Error
 
 
 class Pool:
@@ -18,8 +20,11 @@ class Pool:
         self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
         self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
-        self.relay = relay.Relay()
-        self.floatSwitch = floatSwitch.FloatSwitch()
+        self.relay = relay.Relay()  # Relay that controls the oil burner
+        # GPIO.BOARD pin numbers, (input, output)
+        self.floatSwitch = floatSwitch.FloatSwitch(22, 21)
+        self.egt = MAX31855(29, 31, 37, GPIO.BOARD)  # Exhaust Gas Temperature
+        self.egt_value = -85
 
     def get_temp_low(self):
         if self.low_value is False:
@@ -45,6 +50,7 @@ class Pool:
         self.low_value = round(self.temp_low.get_temperature(), 1)
         self.high_value = round(self.temp_high.get_temperature(), 1)
         self.ambient_value = round(self.temp_ambient.get_temperature(), 1)
+        self.egt_value = round(self.egt.get(), 1)
 
         if self.low_value == 0:
             return False
@@ -93,3 +99,6 @@ class Pool:
 
     def set_lower_limit(self, lower_limit):
         self.lower_limit = lower_limit
+
+    def get_egt(self):
+        return self.egt_value

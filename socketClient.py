@@ -47,6 +47,7 @@ class SocketThread(threading.Thread):
         while True:
             await asyncio.sleep(30)
             data = json.dumps({
+                "egt": self.pool.get_egt(),
                 "temp_low": self.pool.get_temp_low(),
                 "temp_high": self.pool.get_temp_high(),
                 "temp_ambient": self.pool.get_temp_ambient(),
