@@ -7,3 +7,4 @@ __pycache__
 /testScripts
 config.ini
 /logs
+max31855.py
