@@ -13,7 +13,7 @@ class SocketThread(threading.Thread):
         self.pool = pool
         self.isRunning = True
         self.data_array = []
-        self.log_file = open(path, 'w')
+        #self.log_file = open(path, 'w')
         self.url = url
 
     def message_handler(self, message):
@@ -35,29 +35,38 @@ class SocketThread(threading.Thread):
     async def send(self):
         async with websockets.connect('ws://' + self.url) as websocket:
             while True:
-                while len(self.data_array) > 0:
-                    await websocket.send(self.data_array.pop(0))
+                data = json.dumps({
+                    "temp_low": self.pool.get_temp_low(),
+                    "temp_high": self.pool.get_temp_high(),
+                    "temp_ambient": self.pool.get_temp_ambient(),
+                    "warming_phase": self.pool.get_state(),
+                    "target": self.pool.get_target(),
+                    "low_limit": self.pool.get_lower_limit()
+                })
+
+                await websocket.send(data)
+                await asyncio.sleep(10)
 
     async def receive(self):
         async with websockets.connect('ws://' + self.url) as websocket:
             while True:
                 self.message_handler(await websocket.recv())
 
-    async def get_data(self):
-        while True:
-            await asyncio.sleep(30)
-            data = json.dumps({
-                "temp_low": self.pool.get_temp_low(),
-                "temp_high": self.pool.get_temp_high(),
-                "temp_ambient": self.pool.get_temp_ambient(),
-                "warming_phase": self.pool.get_state(),
-                "target": self.pool.get_target(),
-                "low_limit": self.pool.get_lower_limit()
-            })
+    # async def get_data(self):
+     #   while True:
+      #      await asyncio.sleep(30)
+       #     data = json.dumps({
+        #        "temp_low": self.pool.get_temp_low(),
+         #       "temp_high": self.pool.get_temp_high(),
+          #      "temp_ambient": self.pool.get_temp_ambient(),
+           #     "warming_phase": self.pool.get_state(),
+            #    "target": self.pool.get_target(),
+             #   "low_limit": self.pool.get_lower_limit()
+            # })
             # Append the data to an array, websocket sends data from this array
-            self.data_array.append(data)
-            self.log_file.write(data + '\n')  # Write the data also to a file
-            self.log_file.flush()
+           # self.data_array.append(data)
+           # self.log_file.write(data + '\n')  # Write the data also to a file
+           # self.log_file.flush()
 
     def run(self):
         while self.isRunning:
@@ -67,7 +76,6 @@ class SocketThread(threading.Thread):
                 loop.run_until_complete(asyncio.gather(
                     self.send(),
                     self.receive(),
-                    self.get_data(),
                 ))
                 loop.close()
 
