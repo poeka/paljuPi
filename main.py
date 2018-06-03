@@ -56,48 +56,48 @@ while True:
         pool.get_temperatures()
         pool.read_water_level()
 
-        if pool.get_state() != "FOFF":
-            pool.set_state("OFF")
+        if pool.get_state() != pool.FOFF:
+            pool.set_state(pool.OFF)
 
         continue
 
     elif pool.floatSwitch.get_state() == 1:
         pool.read_water_level()
 
-        if pool.get_state() == "FOFF":
+        if pool.get_state() == pool.FOFF:
             pool.get_temperatures()
             continue
 
-        elif pool.get_state() == "ON":
+        elif pool.get_state() == pool.ON:
 
             if pool.get_temperatures() is False:
                 print("Error reading the temperatures")
                 continue
 
             elif pool.get_temp_high() < pool.get_target():
-                pool.set_state("ON")
+                pool.set_state(pool.ON)
                 continue
 
             elif pool.get_temp_high() >= pool.get_target():
-                pool.set_state("UPKEEP")
+                pool.set_state(pool.UPKEEP)
                 continue
 
-        elif pool.get_state() == "UPKEEP":
+        elif pool.get_state() == pool.UPKEEP:
 
             if pool.get_temperatures() is False:
                 print("Error reading the temperatures")
                 continue
 
             elif pool.get_temp_high() <= pool.get_lower_limit():
-                pool.set_state("ON")
+                pool.set_state(pool.ON)
                 continue
 
-        elif pool.get_state() == "OFF":
+        elif pool.get_state() == pool.OFF:
 
             if pool.get_temperatures() is False:
                 print("Error reading the temperatures")
                 continue
 
             elif pool.get_temp_high() <= pool.get_lower_limit():
-                pool.set_state("ON")
+                pool.set_state(pool.ON)
                 continue

@@ -8,6 +8,10 @@ import pressureSender
 
 
 class Pool:
+    ON = "ON"
+    OFF = "OFF"
+    UPKEEP = "UPKEEP"
+    FOFF = "FOFF"
 
     def __init__(self, in_ws_q, out_ws_q, out_display_q):
         self.in_ws_q = in_ws_q
@@ -24,7 +28,7 @@ class Pool:
         self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
         self.estimate = 0
-        self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
+        self.heating_state = self.OFF  # ON/OFF/UPKEEP/FOFF
         self.relay = relay.Relay()
         self.magneticValve = magneticValve.MagneticValve()
         self.floatSwitch = floatSwitch.FloatSwitch()
@@ -94,22 +98,22 @@ class Pool:
 
     def set_state(self, state):
 
-        if state == "OFF":
+        if state == pool.OFF:
             self.relay.toggle_off()
             self.heating_state = state
             return
 
-        elif state == "FOFF":
+        elif state == pool.FOFF:
             self.relay.toggle_off()
             self.heating_state = state
             return
 
-        elif state == "ON":
+        elif state == pool.ON:
             self.relay.toggle_on()
             self.heating_state = state
             return
 
-        elif state == "UPKEEP":
+        elif state == pool.UPKEEP:
             self.relay.toggle_off()
             self.heating_state = state
             return
