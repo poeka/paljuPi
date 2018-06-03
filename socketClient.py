@@ -3,8 +3,6 @@ import json
 import threading
 import time
 import websockets
-import logging
-
 
 class SocketThread(threading.Thread):
 
