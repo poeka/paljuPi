@@ -17,6 +17,7 @@ class Pool:
         self.high_value = -85
         self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
+        self.estimate = 0
         self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
         self.relay = relay.Relay()
         self.floatSwitch = floatSwitch.FloatSwitch()
@@ -93,3 +94,9 @@ class Pool:
 
     def set_lower_limit(self, lower_limit):
         self.lower_limit = lower_limit
+
+    def get_estimate(self):
+        return self.estimate
+
+    def set_estimate(self, estimate):
+        self.estimate = estimate

@@ -25,3 +25,7 @@ class DisplayThread(threading.Thread):
             # Temperature formatted to one decimal
             self.lcd.message(format(self.pool.get_temp_high(),
                                     '.1f') + chr(223) + "C ")
+
+            self.lcd.set_cursor(row=0, col=0)
+            self.lcd.message("->" + datetime.fromtimestamp(
+                int(self.pool.get_estimate())).strftime('%H:%M '))  # HH:MM
