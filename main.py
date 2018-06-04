@@ -9,17 +9,19 @@ import display
 
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('/home/pi/Documents/PaljuPi/config.ini')
+url = config['server']['url']
 
 date = datetime.datetime.now().strftime("%Y-%m-%d")
 path = config['logfile']['path'] + '/' + \
     date + "/log.txt"  # Path for a log file
 os.makedirs(os.path.dirname(path), exist_ok=True)
 
-url = config['server']['url']
+# Using GPIO.BOARD pin numbering
 
 GPIO.setmode(GPIO.BOARD)
 pool = pool.Pool()
+
 socket = socketClient.SocketThread(pool, path, url)
 socket.start()
 
