@@ -98,22 +98,22 @@ class Pool:
 
     def set_state(self, state):
 
-        if state == pool.OFF:
+        if state == Pool.OFF:
             self.relay.toggle_off()
             self.heating_state = state
             return
 
-        elif state == pool.FOFF:
+        elif state == Pool.FOFF:
             self.relay.toggle_off()
             self.heating_state = state
             return
 
-        elif state == pool.ON:
+        elif state == Pool.ON:
             self.relay.toggle_on()
             self.heating_state = state
             return
 
-        elif state == pool.UPKEEP:
+        elif state == Pool.UPKEEP:
             self.relay.toggle_off()
             self.heating_state = state
             return
