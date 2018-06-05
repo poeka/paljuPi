@@ -87,7 +87,7 @@ class Pool:
         return self.target
 
     def set_target(self, target):
-        self.target = target
+        self.target = float(target)
 
     def get_lower_limit(self):
         return self.lower_limit

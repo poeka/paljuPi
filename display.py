@@ -29,3 +29,6 @@ class DisplayThread(threading.Thread):
             self.lcd.set_cursor(row=1, col=0)
             self.lcd.message("->" + datetime.fromtimestamp(
                 int(self.pool.get_estimate())).strftime('%H:%M '))  # HH:MM
+
+            self.lcd.set_cursor(row=1, col=8)
+            self.lcd.message("->" + format(self.pool.get_target(), '.1f') + chr(223) + "C ")

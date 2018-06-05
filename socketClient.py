@@ -20,16 +20,16 @@ class SocketThread(threading.Thread):
         # TODO: can this throw?
         data = json.loads(message)
 
-        if self.pool.get_state() == self.pool.FOFF:
-            if data["warming_phase"] == self.pool.ON:
-                self.pool.set_state(self.pool.ON)
+        if self.pool.get_state() == "FOFF":
+            if data["warming_phase"] == "ON":
+                self.pool.set_state("ON")
 
-        elif data["warming_phase"] == self.pool.FOFF:
-            self.pool.set_state(self.pool.FOFF)
+        elif data["warming_phase"] == "FOFF":
+            self.pool.set_state("FOFF")
 
         self.pool.set_target(data["target"])
         self.pool.set_lower_limit(data["low_limit"])
-        self.pool.set_estimate(data["estimation"])
+        #self.pool.set_estimate(data["estimation"])
 
     async def send(self):
         async with websockets.connect('ws://' + self.url) as websocket:
@@ -46,7 +46,7 @@ class SocketThread(threading.Thread):
                 # Write the data also to a file
                 #self.log_file.write(data + '\n')
                 # self.log_file.flush()
-
+                print(data)
                 await websocket.send(data)
                 await asyncio.sleep(10)
 
