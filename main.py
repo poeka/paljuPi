@@ -1,6 +1,7 @@
 import pool
 import RPi.GPIO as GPIO
 import socketClient
+import receiverSocket
 import time
 import datetime
 import os
@@ -24,6 +25,9 @@ pool = pool.Pool()
 
 socket = socketClient.SocketThread(pool, path, url)
 socket.start()
+
+receiver = receiverSocket.SocketThread(pool, path, url)
+receiver.start()
 
 display = display.DisplayThread(pool)
 display.start()
