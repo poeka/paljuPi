@@ -12,7 +12,7 @@ class SocketThread(threading.Thread):
         threading.Thread.__init__(self)
         self.pool = pool
         self.isRunning = True
-        self.log_file = open(path, 'w')
+        #self.log_file = open(path, 'w')
         self.url = url
 
     def message_handler(self, message):
@@ -44,8 +44,8 @@ class SocketThread(threading.Thread):
                 })
 
                 # Write the data also to a file
-                self.log_file.write(data + '\n')
-                self.log_file.flush()
+                #self.log_file.write(data + '\n')
+                # self.log_file.flush()
 
                 await websocket.send(data)
                 await asyncio.sleep(10)
