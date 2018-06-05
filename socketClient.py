@@ -29,7 +29,7 @@ class SocketThread(threading.Thread):
 
         self.pool.set_target(data["target"])
         self.pool.set_lower_limit(data["low_limit"])
-        #self.pool.set_estimate(data["estimation"])
+        # self.pool.set_estimate(data["estimation"])
 
     async def send(self):
         async with websockets.connect('ws://' + self.url) as websocket:
