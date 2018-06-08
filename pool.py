@@ -3,11 +3,15 @@ import os
 import temp
 import floatSwitch
 import relay
+import queue
 
 
 class Pool:
 
-    def __init__(self):
+    def __init__(self, in_ws_q, out_ws_q, out_display_q):
+        self.in_ws_q = in_ws_q
+        self.out_ws_q = out_ws_q
+        self.out.display_q = out_display_q
         self.target = 38.0
         self.lower_limit = 36.0
         self.total_temperature = -85
@@ -100,3 +104,18 @@ class Pool:
 
     def set_estimate(self, estimate):
         self.estimate = estimate
+
+    ################################
+
+    def data_out(self):
+        data = {"temp_low": self.get_temp_low(),
+                "temp_high": self.get_temp_high(),
+                "temp_ambient": self.get_temp_ambient(),
+                "warming_phase": self.get_state(),
+                "target": self.get_target(),
+                "low_limit": self.get_lower_limit()}
+
+        if self.out_ws_q.empty():
+            self.out_ws_q.put(data)
+        if self.out_display_q.empty():
+            self.out_display_q.put(data)
