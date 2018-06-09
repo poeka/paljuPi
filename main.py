@@ -1,14 +1,15 @@
-import pool
 import RPi.GPIO as GPIO
-import socketClient
 import time
 import datetime
 import os
 import configparser
-import display
 import queue
+import pool
+import display
+import socketClient
 
-config = configparser.ConfigParser()  # Move these to function...
+
+config = configparser.ConfigParser()
 config.read('/home/pi/Documents/PaljuPi/config.ini')
 url = config['server']['url']
 
@@ -35,18 +36,37 @@ socket.start()
 display = display.DisplayThread(out_display_q)
 display.start()
 
-while True:
+
+def data_in_handler():
 
     # WIP: How to handle the data from websocket cleanly?
     data_in = 0
 
     if not in_ws_q.empty():
         data_in = in_ws_q.get()
-        # ...?
+
+        if pool.get_state() == "FOFF":
+            if data_in["warming_phase"] == "ON":
+                pool.set_state("ON")
+
+        elif data_in["warming_phase"] == "FOFF":
+            pool.set_state("FOFF")
+
+        pool.set_target(data_in["target"])
+        pool.set_lower_limit(data_in["low_limit"])
+        pool.set_estimate(data_in["estimation"])
+
+
+while True:
+
+    try:
+        data_in_handler()
+    except:
+        print("Error while handling the websocket data")
 
     if pool.floatSwitch.get_state() == 0:
         pool.get_temperatures()
-        pool.data_out()
+        pool.data_out()  # Tell the pool to fill the outgoing queues with new data (if empty)
 
         if pool.get_state() != "FOFF":
             pool.set_state("OFF")
@@ -54,7 +74,7 @@ while True:
         continue
 
     elif pool.floatSwitch.get_state() == 1:
-        pool.data_out()
+        pool.data_out()  # Tell the pool to fill the outgoing queues with new data (if empty)
 
         if pool.get_state() == "FOFF":
             continue
