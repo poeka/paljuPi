@@ -21,7 +21,8 @@ class SocketThread(threading.Thread):
                 if not self.out_ws_q.empty():
                     data = json.dumps(self.out_ws_q.get())
                     await websocket.send(data)
-                    await asyncio.sleep(10)
+
+                await asyncio.sleep(1)
 
     async def receive(self):
         async with websockets.connect('ws://' + self.url) as websocket:

@@ -47,7 +47,7 @@ def data_in_handler():
 
         if pool.get_state() == "FOFF":
             if data_in["warming_phase"] == "ON":
-                pool.set_state("ON")
+                    pool.set_state("ON")
 
         elif data_in["warming_phase"] == "FOFF":
             pool.set_state("FOFF")

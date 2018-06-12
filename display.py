@@ -36,9 +36,8 @@ class DisplayThread(threading.Thread):
         self.lcd.set_cursor(row=1, col=0)
         self.lcd.message(self.data["warming_phase"] + "  ")
 
-        self.lcd.set_cursor(row=1, col=6)
-        self.lcd.message(
-            "TGT:" + format(self.data["target"], '.1f') + chr(223) + "C ")
+        self.lcd.set_cursor(row=1, col=10)
+        self.lcd.message(format(self.data["target"], '.1f') + chr(223) + "C ")
 
     def run(self):
 
