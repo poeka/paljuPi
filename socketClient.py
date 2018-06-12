@@ -26,7 +26,7 @@ class SocketThread(threading.Thread):
     async def receive(self):
         async with websockets.connect('ws://' + self.url) as websocket:
             while True:
-                message = await websocket.recv())
+                message = await websocket.recv()
 
                 if not self.in_ws_q.full():
                     self.in_ws_q.put(json.loads(message))

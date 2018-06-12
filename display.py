@@ -22,24 +22,23 @@ class DisplayThread(threading.Thread):
             print("Can't get the data from queue. (display)")
 
         self.lcd.set_cursor(row=0, col=0)
-        self.lcd.message(datetime.now().strftime('%H:%M:%S'))  # HH:MM:SS
+        self.lcd.message(datetime.now().strftime('%H:%M'))  # HH:MM
 
         self.lcd.set_cursor(row=0, col=10)
         # Temperature formatted to one decimal
         self.lcd.message(format(self.data["temp_high"],
                                 '.1f') + chr(223) + "C ")
 
-        self.lcd.set_cursor(row=1, col=0)
-        self.lcd.message("->" + datetime.fromtimestamp(
-            int(self.data["estimate"])).strftime('%H:%M '))  # HH:MM
+       # self.lcd.set_cursor(row=1, col=0)
+       # self.lcd.message("->" + datetime.fromtimestamp(
+       #     int(self.data["estimate"])).strftime('%H:%M '))  # HH:MM
 
         self.lcd.set_cursor(row=1, col=0)
-        self.lcd.message(
-            "->" + self.data["warming_phase"] + "  ")
+        self.lcd.message(self.data["warming_phase"] + "  ")
 
-        self.lcd.set_cursor(row=1, col=8)
+        self.lcd.set_cursor(row=1, col=6)
         self.lcd.message(
-            "->" + format(self.data["target"], '.1f') + chr(223) + "C ")
+            "TGT:" + format(self.data["target"], '.1f') + chr(223) + "C ")
 
     def run(self):
 
