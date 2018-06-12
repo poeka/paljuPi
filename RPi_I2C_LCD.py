@@ -12,7 +12,7 @@ Made available under GNU GENERAL PUBLIC LICENSE
 # Modified by sourceperl (Loïc Lefebvre)
 # 2016-02-15
 """
-import smbus
+import smbus2 as smbus
 from time import *
 
 # some const

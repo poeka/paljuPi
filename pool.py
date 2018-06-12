@@ -93,7 +93,7 @@ class Pool:
         return self.lower_limit
 
     def set_lower_limit(self, lower_limit):
-        self.lower_limit = lower_limit
+        self.lower_limit = float(lower_limit)
 
     def get_estimate(self):
         return self.estimate
