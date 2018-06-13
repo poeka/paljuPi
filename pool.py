@@ -105,7 +105,20 @@ class Pool:
     def set_estimate(self, estimate):
         self.estimate = estimate
 
-    ################################
+    def data_in(self):
+        if not self.in_ws_q.empty():
+            data_in = self.in_ws_q.get()
+
+        if self.get_state() == "FOFF":
+            if data_in["warming_phase"] == "ON":
+                self.set_state("ON")
+
+        elif data_in["warming_phase"] == "FOFF":
+            self.set_state("FOFF")
+
+        self.set_target(data_in["target"])
+        self.set_lower_limit(data_in["low_limit"])
+        self.set_estimate(data_in["estimation"])
 
     def data_out(self):
         data = {"temp_low": self.get_temp_low(),
