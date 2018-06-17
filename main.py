@@ -55,6 +55,7 @@ while True:
     elif pool.floatSwitch.get_state() == 1:
 
         if pool.get_state() == "FOFF":
+            pool.get_temperatures()
             continue
 
         elif pool.get_state() == "ON":
