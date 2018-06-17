@@ -35,9 +35,9 @@ class SocketThread(threading.Thread):
                     self.in_ws_q.put(json.loads(message))
 
     def run(self):
-        logger = logging.getLogger('websockets')
-        logger.setLevel(logging.ERROR)  # ERROR, INFO, DEBUG
-        logger.addHandler(logging.StreamHandler())
+        #logger = logging.getLogger('websockets')
+        #logger.setLevel(logging.ERROR)  # ERROR, INFO, DEBUG
+        #logger.addHandler(logging.StreamHandler())
 
         while self.isRunning:
             try:

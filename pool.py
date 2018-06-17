@@ -12,8 +12,8 @@ class Pool:
         self.in_ws_q = in_ws_q
         self.out_ws_q = out_ws_q
         self.out_display_q = out_display_q
-        self.target = 38.0
-        self.lower_limit = 36.0
+        self.target = 37.3
+        self.lower_limit = 36.3
         self.total_temperature = -85
         self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
@@ -109,16 +109,16 @@ class Pool:
         if not self.in_ws_q.empty():
             data_in = self.in_ws_q.get()
 
-        if self.get_state() == "FOFF":
-            if data_in["warming_phase"] == "ON":
-                self.set_state("ON")
+            if self.get_state() == "FOFF":
+                if data_in["warming_phase"] == "ON":
+                    self.set_state("ON")
 
-        elif data_in["warming_phase"] == "FOFF":
-            self.set_state("FOFF")
+            elif data_in["warming_phase"] == "FOFF":
+                self.set_state("FOFF")
 
-        self.set_target(data_in["target"])
-        self.set_lower_limit(data_in["low_limit"])
-        self.set_estimate(data_in["estimation"])
+            self.set_target(data_in["target"])
+            self.set_lower_limit(data_in["low_limit"])
+            self.set_estimate(data_in["estimation"])
 
     def data_out(self):
         data = {"temp_low": self.get_temp_low(),

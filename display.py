@@ -34,12 +34,18 @@ class DisplayThread(threading.Thread):
        #     int(self.data["estimate"])).strftime('%H:%M '))  # HH:MM
 
         self.lcd.set_cursor(row=1, col=0)
-        self.lcd.message(self.data["warming_phase"] + "  ")
+        self.lcd.message(self.data["warming_phase"] + "    ")
 
         self.lcd.set_cursor(row=1, col=10)
         self.lcd.message(format(self.data["target"], '.1f') + chr(223) + "C ")
 
     def run(self):
+
+        self.lcd.clear()
+        self.lcd.set_cursor(row=0, col=0)
+        self.lcd.message("PaljuPi Beta")
+        time.sleep(10)
+        self.lcd.clear()
 
         while True:
             try:
