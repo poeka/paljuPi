@@ -5,13 +5,17 @@ import floatSwitch
 import relay
 import RPi.GPIO as GPIO
 from max31855 import MAX31855, MAX31855Error
+import queue
 
 
 class Pool:
 
-    def __init__(self):
-        self.target = 38.0
-        self.lower_limit = 36.0
+    def __init__(self, in_ws_q, out_ws_q, out_display_q):
+        self.in_ws_q = in_ws_q
+        self.out_ws_q = out_ws_q
+        self.out_display_q = out_display_q
+        self.target = 37.3
+        self.lower_limit = 36.3
         self.total_temperature = -85
         self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
@@ -19,6 +23,7 @@ class Pool:
         self.high_value = -85
         self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
+        self.estimate = 0
         self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
         self.relay = relay.Relay()  # Relay that controls the oil burner
         # GPIO.BOARD pin numbers, (input, output)
@@ -92,13 +97,54 @@ class Pool:
         return self.target
 
     def set_target(self, target):
-        self.target = target
+        self.target = float(target)
 
     def get_lower_limit(self):
         return self.lower_limit
 
     def set_lower_limit(self, lower_limit):
+
+
+<< << << < HEAD
         self.lower_limit = lower_limit
 
     def get_egt(self):
         return self.egt_value
+=======
+        self.lower_limit = float(lower_limit)
+
+    def get_estimate(self):
+        return self.estimate
+
+    def set_estimate(self, estimate):
+        self.estimate = estimate
+
+    def data_in(self):
+        if not self.in_ws_q.empty():
+            data_in = self.in_ws_q.get()
+
+            if self.get_state() == "FOFF":
+                if data_in["warming_phase"] == "ON":
+                    self.set_state("ON")
+
+            elif data_in["warming_phase"] == "FOFF":
+                self.set_state("FOFF")
+
+            self.set_target(data_in["target"])
+            self.set_lower_limit(data_in["low_limit"])
+            self.set_estimate(data_in["estimation"])
+
+    def data_out(self):
+        data = {"temp_low": self.get_temp_low(),
+                "temp_high": self.get_temp_high(),
+                "temp_ambient": self.get_temp_ambient(),
+                "warming_phase": self.get_state(),
+                "target": self.get_target(),
+                "low_limit": self.get_lower_limit(),
+                "estimate": self.get_estimate()}
+
+        if self.out_ws_q.empty():
+            self.out_ws_q.put(data)
+        if self.out_display_q.empty():
+            self.out_display_q.put(data)
+>>>>>>> origin/master
