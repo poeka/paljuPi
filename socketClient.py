@@ -31,22 +31,8 @@ class SocketThread(threading.Thread):
                 if not self.out_ws_q.empty():
                     tmp = self.out_ws_q.get()  # No clear() method available...
 
-    async def get_data(self):
-        while True:
-            await asyncio.sleep(30)
-            data = json.dumps({
-                "egt": self.pool.get_egt(),
-                "temp_low": self.pool.get_temp_low(),
-                "temp_high": self.pool.get_temp_high(),
-                "temp_ambient": self.pool.get_temp_ambient(),
-                "warming_phase": self.pool.get_state(),
-                "target": self.pool.get_target(),
-                "low_limit": self.pool.get_lower_limit()
-            })
-            # Append the data to an array, websocket sends data from this array
-            self.data_array.append(data)
-            self.log_file.write(data + '\n')  # Write the data also to a file
-            self.log_file.flush()
+                if not self.in_ws_q.full():
+                    self.in_ws_q.put(json.loads(message))
 
     def run(self):
         #logger = logging.getLogger('websockets')
