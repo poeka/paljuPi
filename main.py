@@ -10,7 +10,7 @@ import socketClient
 
 
 config = configparser.ConfigParser()
-config.read('/home/pi/Documents/PaljuPi/config.ini')
+config.read(os.environ['PALJUPI_CONFIG'])
 url = config['server']['url']
 
 #date = datetime.datetime.now().strftime("%Y-%m-%d")

@@ -16,6 +16,7 @@ class SocketThread(threading.Thread):
         self.isRunning = True
 
     async def send(self):
+        print("send")
         async with websockets.connect('ws://' + self.url) as websocket:
             while True:
                 if not self.out_ws_q.empty():
