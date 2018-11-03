@@ -3,7 +3,7 @@ import os
 import temp
 import floatSwitch
 import relay
-import queue
+import pressureSender
 
 
 class Pool:
@@ -14,6 +14,7 @@ class Pool:
         self.out_display_q = out_display_q
         self.target = 37.3
         self.lower_limit = 36.3
+        self.water_level_target = 80 # Target in cm
         self.total_temperature = -85
         self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
@@ -25,6 +26,8 @@ class Pool:
         self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
         self.relay = relay.Relay()
         self.floatSwitch = floatSwitch.FloatSwitch()
+        self.pressureSender = pressureSender.PressureSender()
+        self.water_level = -1
 
     def get_temp_low(self):
         if self.low_value is False:
@@ -61,6 +64,20 @@ class Pool:
             return False
 
         return True
+
+    def read_water_level(self):
+        self.water_level = self.pressureSender.get_water_level()
+        return self.water_level
+
+    def get_water_level(self):
+        return self.water_level
+
+    def get_water_level_target(self):
+        return self.water_level_target
+
+    def set_water_level_target(self, target):
+        self.water_level_target = target
+        return
 
     def get_state(self):
         return self.heating_state
@@ -119,6 +136,7 @@ class Pool:
             self.set_target(data_in["target"])
             self.set_lower_limit(data_in["low_limit"])
             self.set_estimate(data_in["estimation"])
+            self.set_water_level_target(data_in["water_level_target"])
 
     def data_out(self):
         data = {"temp_low": self.get_temp_low(),
@@ -127,7 +145,9 @@ class Pool:
                 "warming_phase": self.get_state(),
                 "target": self.get_target(),
                 "low_limit": self.get_lower_limit(),
-                "estimate": self.get_estimate()}
+                "estimate": self.get_estimate(),
+                "water_level": self.read_water_level(),
+                "water_level_target": self.get_water_level()}
 
         if self.out_ws_q.empty():
             self.out_ws_q.put(data)

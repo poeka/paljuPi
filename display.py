@@ -23,6 +23,7 @@ class DisplayThread(threading.Thread):
 
         self.lcd.set_cursor(row=0, col=0)
         self.lcd.message(datetime.now().strftime('%H:%M'))  # HH:MM
+        # self.lcd.message(str(self.data["water_level"])
 
         self.lcd.set_cursor(row=0, col=10)
         # Temperature formatted to one decimal
@@ -44,7 +45,7 @@ class DisplayThread(threading.Thread):
         self.lcd.clear()
         self.lcd.set_cursor(row=0, col=0)
         self.lcd.message("PaljuPi Beta")
-        time.sleep(10)
+        time.sleep(5)
         self.lcd.clear()
 
         while True:
