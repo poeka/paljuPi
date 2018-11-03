@@ -3,8 +3,7 @@ import os
 import temp
 import floatSwitch
 import relay
-import queue
-import serial
+import pressureSender
 
 
 class Pool:
@@ -26,10 +25,8 @@ class Pool:
         self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
         self.relay = relay.Relay()
         self.floatSwitch = floatSwitch.FloatSwitch()
+        self.pressureSender = pressureSender.PressureSender()
         self.water_level = 0
-        self.ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=5)
-        self.ser.reset_input_buffer()
-        self.ser.readline()
 
     def get_temp_low(self):
         if self.low_value is False:
@@ -68,23 +65,7 @@ class Pool:
         return True
 
     def get_water_level(self):
-        offset = 5
-        try:
-            value = float(self.ser.readline().decode().strip('\r\n'))
-            if value == 0:
-                return self.water_level
-        except:
-            return self.water_level
-
-        if(value < 0.5):
-            value = 0.5
-            offset = 0
-        psi = 5*(value-0.5)/(4.5-0.5)
-        pa = psi*6894.76  # 1 psi is 6894.76 pascals
-        h_cm = 100*(pa / (997*9.81)) + offset
-        print(h_cm)
-        self.water_level = format(h_cm, '.1f')
-        return self.water_level
+        self.water_level = pressureSender.get_water_level()
 
     def get_state(self):
         return self.heating_state
