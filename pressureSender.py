@@ -5,7 +5,7 @@ class PressureSender:
     def __init__(self):
         self.water_level = 0
         self.set = False
-        self.ser
+        self.ser = -1
 
     def get_state(self):
         return self.set
@@ -18,8 +18,11 @@ class PressureSender:
                 self.ser.reset_input_buffer()
                 self.ser.readline()
                 self.set = True
+                print("Trying to read serial")
             except:
+                print("EI PYSTY LUKEEN")
                 self.set = False
+                self.water_level = -1
                 return self.water_level
 
         offset = 5
