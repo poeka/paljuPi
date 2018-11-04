@@ -3,6 +3,7 @@ import os
 import temp
 import floatSwitch
 import relay
+import magneticValve
 import pressureSender
 
 
@@ -14,7 +15,7 @@ class Pool:
         self.out_display_q = out_display_q
         self.target = 37.3
         self.lower_limit = 36.3
-        self.water_level_target = 80 # Target in cm
+        self.water_level_target = 80  # Target in cm
         self.total_temperature = -85
         self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
@@ -25,9 +26,18 @@ class Pool:
         self.estimate = 0
         self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
         self.relay = relay.Relay()
+        self.magneticValve = magneticValve.MagneticValve()
         self.floatSwitch = floatSwitch.FloatSwitch()
         self.pressureSender = pressureSender.PressureSender()
         self.water_level = -1
+
+    def open_valve(self):
+        self.magneticValve.open()
+        return
+
+    def close_valve(self):
+        self.magneticValve.close()
+        return
 
     def get_temp_low(self):
         if self.low_value is False:
@@ -147,7 +157,7 @@ class Pool:
                 "low_limit": self.get_lower_limit(),
                 "estimate": self.get_estimate(),
                 "water_level": self.read_water_level(),
-                "water_level_target": self.get_water_level()}
+                "water_level_target": self.get_water_level_target()}
 
         if self.out_ws_q.empty():
             self.out_ws_q.put(data)
