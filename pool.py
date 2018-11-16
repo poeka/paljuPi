@@ -76,8 +76,7 @@ class Pool:
         return True
 
     def read_water_level(self):
-        water_level = self.pressureSender.get_water_level()
-        self.water_level = float(water_level)
+        self.water_level = int(self.pressureSender.get_water_level())
         return self.water_level
 
     def get_water_level(self):
@@ -87,7 +86,7 @@ class Pool:
         return self.water_level_target
 
     def set_water_level_target(self, target):
-        self.water_level_target = float(target)
+        self.water_level_target = int(target)
         return
 
     def get_state(self):
