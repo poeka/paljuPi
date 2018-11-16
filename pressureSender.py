@@ -37,6 +37,5 @@ class PressureSender:
         psi = 5*(value-0.5)/(4.5-0.5)
         pa = psi*6894.76  # 1 psi is 6894.76 pascals
         h_cm = 100*(pa / (997*9.81)) + offset
-        print(h_cm)
         self.water_level = format(h_cm, '.1f')
         return self.water_level

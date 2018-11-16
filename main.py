@@ -47,7 +47,7 @@ while True:
     if pool.get_water_level() < pool.get_water_level_target():
         pool.open_valve()
 
-    elif pool.get_water_level() >= pool.water_level_target():
+    elif pool.get_water_level() >= pool.get_water_level_target():
         pool.close_valve()
 
     elif pool.floatSwitch.get_state() == 0:
