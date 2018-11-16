@@ -76,7 +76,8 @@ class Pool:
         return True
 
     def read_water_level(self):
-        self.water_level = float(self.pressureSender.get_water_level())
+        water_level = self.pressureSender.get_water_level()
+        self.water_level = float(water_level)
         return self.water_level
 
     def get_water_level(self):
@@ -86,7 +87,7 @@ class Pool:
         return self.water_level_target
 
     def set_water_level_target(self, target):
-        self.water_level_target = target
+        self.water_level_target = float(target)
         return
 
     def get_state(self):
@@ -130,7 +131,7 @@ class Pool:
         return self.estimate
 
     def set_estimate(self, estimate):
-        self.estimate = estimate
+        self.estimate = int(estimate)
 
     def data_in(self):
         if not self.in_ws_q.empty():

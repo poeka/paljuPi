@@ -44,11 +44,13 @@ while True:
     except:
         print("Error while handling the websocket data")
 
-    if pool.get_water_level() < pool.get_water_level_target():
-        pool.open_valve()
+    if pool.get_water_level() != -1:
 
-    elif pool.get_water_level() >= pool.get_water_level_target():
-        pool.close_valve()
+        if pool.get_water_level() < pool.get_water_level_target():
+            pool.open_valve()
+
+        elif pool.get_water_level() >= pool.get_water_level_target():
+            pool.close_valve()
 
     elif pool.floatSwitch.get_state() == 0:
         pool.get_temperatures()
