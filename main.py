@@ -37,7 +37,7 @@ display = display.DisplayThread(out_display_q)
 display.start()
 
 while True:
-
+    print("haloo")
     try:
         pool.data_in()   # Handle the incoming data
         pool.data_out()  # Fill the outgoing queues with new data (if empty)
