@@ -13,8 +13,8 @@ class Pool:
         self.in_ws_q = in_ws_q
         self.out_ws_q = out_ws_q
         self.out_display_q = out_display_q
-        self.target = 37.3
-        self.lower_limit = 36.3
+        self.target = 37.0
+        self.lower_limit = 36.0
         self.water_level_target = 80  # Target in cm
         self.total_temperature = -85
         self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
@@ -29,7 +29,7 @@ class Pool:
         self.magneticValve = magneticValve.MagneticValve()
         self.floatSwitch = floatSwitch.FloatSwitch()
         self.pressureSender = pressureSender.PressureSender()
-        self.water_level = -1
+        self.water_level = float(-1)
 
     def open_valve(self):
         self.magneticValve.open()
@@ -76,9 +76,7 @@ class Pool:
         return True
 
     def read_water_level(self):
-        self.water_level = int(self.pressureSender.get_water_level())
-        return self.water_level
-
+        self.water_level = round(float(self.pressureSender.get_water_level()), 1)
     def get_water_level(self):
         return self.water_level
 
@@ -156,7 +154,7 @@ class Pool:
                 "target": self.get_target(),
                 "low_limit": self.get_lower_limit(),
                 "estimate": self.get_estimate(),
-                "water_level": self.read_water_level(),
+                "water_level": self.get_water_level(),
                 "water_level_target": self.get_water_level_target()}
 
         if self.out_ws_q.empty():

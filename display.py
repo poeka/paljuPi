@@ -22,8 +22,8 @@ class DisplayThread(threading.Thread):
             print("Can't get the data from queue. (display)")
 
         self.lcd.set_cursor(row=0, col=0)
-        self.lcd.message(datetime.now().strftime('%H:%M'))  # HH:MM
-        # self.lcd.message(str(self.data["water_level"])
+        #self.lcd.message(datetime.now().strftime('%H:%M'))  # HH:MM
+        self.lcd.message(str(self.data["water_level"])+ "  ")
 
         self.lcd.set_cursor(row=0, col=10)
         # Temperature formatted to one decimal

@@ -37,7 +37,7 @@ display = display.DisplayThread(out_display_q)
 display.start()
 
 while True:
-    print("haloo")
+
     try:
         pool.data_in()   # Handle the incoming data
         pool.data_out()  # Fill the outgoing queues with new data (if empty)
@@ -52,8 +52,9 @@ while True:
         elif pool.get_water_level() >= pool.get_water_level_target():
             pool.close_valve()
 
-    elif pool.floatSwitch.get_state() == 0:
+    if pool.floatSwitch.get_state() == 0:
         pool.get_temperatures()
+        pool.read_water_level()
 
         if pool.get_state() != "FOFF":
             pool.set_state("OFF")
@@ -61,6 +62,7 @@ while True:
         continue
 
     elif pool.floatSwitch.get_state() == 1:
+        pool.read_water_level()
 
         if pool.get_state() == "FOFF":
             pool.get_temperatures()
