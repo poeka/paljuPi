@@ -76,7 +76,9 @@ class Pool:
         return True
 
     def read_water_level(self):
-        self.water_level = round(float(self.pressureSender.get_water_level()), 1)
+        self.water_level = round(
+            float(self.pressureSender.get_water_level(self.temp_high)), 1)
+
     def get_water_level(self):
         return self.water_level
 
