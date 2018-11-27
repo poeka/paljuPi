@@ -1,13 +1,18 @@
 import glob
 import os
-import temp
-import floatSwitch
-import relay
-import magneticValve
-import pressureSender
+
+from temp import TempSensor
+from floatSwitch import FloatSwitch
+from relay import Relay
+from magneticValve import MagneticValve
+from pressureSender import PressureSender
 
 
 class Pool:
+    ON = "ON"
+    OFF = "OFF"
+    UPKEEP = "UPKEEP"
+    FOFF = "FOFF"
 
     def __init__(self, in_ws_q, out_ws_q, out_display_q):
         self.in_ws_q = in_ws_q
@@ -17,18 +22,18 @@ class Pool:
         self.lower_limit = 36.0
         self.water_level_target = 80  # Target in cm
         self.total_temperature = -85
-        self.temp_low = temp.TempSensor("28-0517a04776ff")  # Lower
+        self.temp_low = TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
-        self.temp_high = temp.TempSensor("28-000008a5dd2c")  # Upper
+        self.temp_high = TempSensor("28-000008a5dd2c")  # Upper
         self.high_value = -85
-        self.temp_ambient = temp.TempSensor("28-031724b16bff")  # Ambient
+        self.temp_ambient = TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
         self.estimate = 0
-        self.heating_state = "OFF"  # ON/OFF/UPKEEP/FOFF
-        self.relay = relay.Relay()
-        self.magneticValve = magneticValve.MagneticValve()
-        self.floatSwitch = floatSwitch.FloatSwitch()
-        self.pressureSender = pressureSender.PressureSender()
+        self.heating_state = self.OFF  # ON/OFF/UPKEEP/FOFF
+        self.relay = Relay()
+        self.magneticValve = MagneticValve()
+        self.floatSwitch = FloatSwitch()
+        self.pressureSender = PressureSender()
         self.water_level = float(-1)
 
     def open_valve(self):
@@ -94,24 +99,24 @@ class Pool:
 
     def set_state(self, state):
 
-        if state == "OFF":
+        if state == self.OFF:
             self.relay.toggle_off()
-            self.heating_state = state
+            self.heating_state = self.OFF
             return
 
-        elif state == "FOFF":
+        elif state == self.FOFF:
             self.relay.toggle_off()
-            self.heating_state = state
+            self.heating_state = self.FOFF
             return
 
-        elif state == "ON":
+        elif state == self.ON:
             self.relay.toggle_on()
-            self.heating_state = state
+            self.heating_state = self.ON
             return
 
-        elif state == "UPKEEP":
+        elif state == self.UPKEEP:
             self.relay.toggle_off()
-            self.heating_state = state
+            self.heating_state = self.UPKEEP
             return
 
     def get_target(self):
@@ -136,12 +141,12 @@ class Pool:
         if not self.in_ws_q.empty():
             data_in = self.in_ws_q.get()
 
-            if self.get_state() == "FOFF":
-                if data_in["warming_phase"] == "ON":
-                    self.set_state("ON")
+            if self.get_state() == self.FOFF:
+                if data_in["warming_phase"] == self.ON:
+                    self.set_state(self.ON)
 
-            elif data_in["warming_phase"] == "FOFF":
-                self.set_state("FOFF")
+            elif data_in["warming_phase"] == self.FOFF:
+                self.set_state(self.FOFF)
 
             self.set_target(data_in["target"])
             self.set_lower_limit(data_in["low_limit"])
