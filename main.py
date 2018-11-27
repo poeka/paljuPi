@@ -4,9 +4,10 @@ import datetime
 import os
 import configparser
 import queue
-import pool
-import display
-import socketClient
+
+from pool import Pool
+from display import DisplayThread
+from socketClient import SocketThread
 
 
 config = configparser.ConfigParser()
@@ -28,12 +29,12 @@ out_display_q = queue.Queue(1)
 # Queue which inholds the messages that are going for display(s)
 out_ws_q = queue.Queue(1)
 
-pool = pool.Pool(in_ws_q, out_ws_q, out_display_q)
+pool = Pool(in_ws_q, out_ws_q, out_display_q)
 
-socket = socketClient.SocketThread(url, in_ws_q, out_ws_q)
+socket = SocketThread(url, in_ws_q, out_ws_q)
 socket.start()
 
-display = display.DisplayThread(out_display_q)
+display = DisplayThread(out_display_q)
 display.start()
 
 while True:

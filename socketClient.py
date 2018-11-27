@@ -4,6 +4,7 @@ import threading
 import time
 import websockets
 
+
 class SocketThread(threading.Thread):
 
     def __init__(self, url, in_ws_q, out_ws_q):
