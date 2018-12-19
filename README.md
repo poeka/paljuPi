@@ -11,3 +11,8 @@ RPaaCCFHT - Raspberry Pi as a control center for a Hot Tub
 * Magnetic valve to control incoming water flow
 * LCD display & related drawing functionality to show information about the tub (temp/target temp etc)
 * Websocket based communication with a web server
+
+### Related work
+
+* Web server: https://github.com/EkkuL/palju-server
+* Phone application: https://github.com/EkkuL/palju-app
