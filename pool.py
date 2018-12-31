@@ -19,8 +19,8 @@ class Pool:
         self.out_ws_q = out_ws_q
         self.out_display_q = out_display_q
         self.target = 37.0
-        self.lower_limit = 36.0
-        self.water_level_target = 80  # Target in cm
+        self.lower_limit = 36.5
+        self.water_level_target = 70  # Target in cm
         self.total_temperature = -85
         self.temp_low = TempSensor("28-0517a04776ff")  # Lower
         self.low_value = -85
@@ -82,7 +82,7 @@ class Pool:
 
     def read_water_level(self):
         self.water_level = round(
-            float(self.pressureSender.get_water_level(self.temp_high)), 1)
+            float(self.pressureSender.get_water_level(self.high_value)), 1)
 
     def get_water_level(self):
         return self.water_level

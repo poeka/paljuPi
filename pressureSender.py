@@ -38,7 +38,7 @@ class PressureSender:
             offset = 0
 
         elif(water_temperature != -85):
-
+            
             # Water's density is calculated with Kell's formula, should be valid for 0-150'C
 
             self.water_density = (999.83952+16.945176*water_temperature-(7.987040*10**-3)*water_temperature**2-(46.170461*10**-6)*water_temperature**3 +
