@@ -1,0 +1,4 @@
+ON = "ON"
+OFF = "OFF"
+UPKEEP = "UPKEEP"
+FOFF = "FOFF"

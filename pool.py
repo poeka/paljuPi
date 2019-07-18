@@ -1,6 +1,7 @@
 import glob
 import os
 
+import defs
 from temp import TempSensor
 from floatSwitch import FloatSwitch
 from relay import Relay
@@ -9,10 +10,6 @@ from pressureSender import PressureSender
 
 
 class Pool:
-    ON = "ON"
-    OFF = "OFF"
-    UPKEEP = "UPKEEP"
-    FOFF = "FOFF"
 
     def __init__(self, in_ws_q, out_ws_q, out_display_q):
         self.in_ws_q = in_ws_q
@@ -29,7 +26,7 @@ class Pool:
         self.temp_ambient = TempSensor("28-031724b16bff")  # Ambient
         self.ambient_value = -85
         self.estimate = 0
-        self.heating_state = self.OFF  # ON/OFF/UPKEEP/FOFF
+        self.heating_state = defs.OFF  # ON/OFF/UPKEEP/FOFF
         self.relay = Relay()
         self.magneticValve = MagneticValve()
         self.floatSwitch = FloatSwitch()
@@ -99,24 +96,24 @@ class Pool:
 
     def set_state(self, state):
 
-        if state == self.OFF:
+        if state == defs.OFF:
             self.relay.toggle_off()
-            self.heating_state = self.OFF
+            self.heating_state = defs.OFF
             return
 
-        elif state == self.FOFF:
+        elif state == defs.FOFF:
             self.relay.toggle_off()
-            self.heating_state = self.FOFF
+            self.heating_state = defs.FOFF
             return
 
-        elif state == self.ON:
+        elif state == defs.ON:
             self.relay.toggle_on()
-            self.heating_state = self.ON
+            self.heating_state = defs.ON
             return
 
-        elif state == self.UPKEEP:
+        elif state == defs.UPKEEP:
             self.relay.toggle_off()
-            self.heating_state = self.UPKEEP
+            self.heating_state = defs.UPKEEP
             return
 
     def get_target(self):
@@ -141,12 +138,12 @@ class Pool:
         if not self.in_ws_q.empty():
             data_in = self.in_ws_q.get()
 
-            if self.get_state() == self.FOFF:
-                if data_in["warming_phase"] == self.ON:
-                    self.set_state(self.ON)
+            if self.get_state() == defs.FOFF:
+                if data_in["warming_phase"] == defs.ON:
+                    self.set_state(defs.ON)
 
-            elif data_in["warming_phase"] == self.FOFF:
-                self.set_state(self.FOFF)
+            elif data_in["warming_phase"] == defs.FOFF:
+                self.set_state(defs.FOFF)
 
             self.set_target(data_in["target"])
             self.set_lower_limit(data_in["low_limit"])
