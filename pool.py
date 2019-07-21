@@ -27,19 +27,19 @@ class Pool:
         self.ambient_value = -85
         self.estimate = 0
         self.heating_state = defs.OFF  # ON/OFF/UPKEEP/FOFF
+        self.next_state = defs.OFF
         self.relay = Relay()
         self.magneticValve = MagneticValve()
         self.floatSwitch = FloatSwitch()
         self.pressureSender = PressureSender()
         self.water_level = float(-1)
 
-    def open_valve(self):
-        self.magneticValve.open()
-        return
-
-    def close_valve(self):
-        self.magneticValve.close()
-        return
+    def handle_valve(self):
+        if self.get_water_level() != -1:
+            if self.get_water_level() < self.get_water_level_target():
+                self.magneticValve.open()
+            elif self.get_water_level() >= self.get_water_level_target():
+                self.magneticValve.close()
 
     def get_temp_low(self):
         if self.low_value is False:
@@ -134,16 +134,22 @@ class Pool:
     def set_estimate(self, estimate):
         self.estimate = int(estimate)
 
+    def get_next_state(self):
+        return self.next_state
+
+    def set_next_state(self, next_state):
+        self.next_state = next_state
+
     def data_in(self):
         if not self.in_ws_q.empty():
             data_in = self.in_ws_q.get()
 
             if self.get_state() == defs.FOFF:
                 if data_in["warming_phase"] == defs.ON:
-                    self.set_state(defs.ON)
+                    self.next_state = defs.ON
 
             elif data_in["warming_phase"] == defs.FOFF:
-                self.set_state(defs.FOFF)
+                self.next_state = defs.FOFF
 
             self.set_target(data_in["target"])
             self.set_lower_limit(data_in["low_limit"])

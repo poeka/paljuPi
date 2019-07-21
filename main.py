@@ -37,13 +37,17 @@ socket.start()
 display = DisplayThread(out_display_q)
 display.start()
 
+context = Context()
+
 while True:
 
     try:
+        context.work(pool)
         pool.get_temperatures()
         pool.read_water_level()
 
         pool.data_in()   # Handle the incoming data
         pool.data_out()  # Fill the outgoing queues with new data (if empty)
+
     except:
         print("Something went wrong.")
