@@ -8,7 +8,7 @@ import queue
 from pool import Pool
 from display import DisplayThread
 from socketClient import SocketThread
-
+from statePattern import Context, On, Off, Upkeep, Foff
 
 config = configparser.ConfigParser()
 config.read('/home/pi/Documents/PaljuPi/config.ini')
@@ -37,68 +37,17 @@ socket.start()
 display = DisplayThread(out_display_q)
 display.start()
 
+context = Context()
+
 while True:
 
     try:
-        pool.data_in()   # Handle the incoming data
-        pool.data_out()  # Fill the outgoing queues with new data (if empty)
-    except:
-        print("Error while handling the websocket data")
-
-    if pool.get_water_level() != -1:
-
-        if pool.get_water_level() < pool.get_water_level_target():
-            pool.open_valve()
-
-        elif pool.get_water_level() >= pool.get_water_level_target():
-            pool.close_valve()
-
-    if pool.floatSwitch.get_state() == 0:
+        context.work(pool)
         pool.get_temperatures()
         pool.read_water_level()
 
-        if pool.get_state() != pool.FOFF:
-            pool.set_state(pool.OFF)
+        pool.data_in()   # Handle the incoming data
+        pool.data_out()  # Fill the outgoing queues with new data (if empty)
 
-        continue
-
-    elif pool.floatSwitch.get_state() == 1:
-        pool.read_water_level()
-
-        if pool.get_state() == pool.FOFF:
-            pool.get_temperatures()
-            continue
-
-        elif pool.get_state() == pool.ON:
-
-            if pool.get_temperatures() is False:
-                print("Error reading the temperatures")
-                continue
-
-            elif pool.get_temp_high() < pool.get_target():
-                pool.set_state(pool.ON)
-                continue
-
-            elif pool.get_temp_high() >= pool.get_target():
-                pool.set_state(pool.UPKEEP)
-                continue
-
-        elif pool.get_state() == pool.UPKEEP:
-
-            if pool.get_temperatures() is False:
-                print("Error reading the temperatures")
-                continue
-
-            elif pool.get_temp_high() <= pool.get_lower_limit():
-                pool.set_state(pool.ON)
-                continue
-
-        elif pool.get_state() == pool.OFF:
-
-            if pool.get_temperatures() is False:
-                print("Error reading the temperatures")
-                continue
-
-            elif pool.get_temp_high() <= pool.get_lower_limit():
-                pool.set_state(pool.ON)
-                continue
+    except:
+        print("Something went wrong.")

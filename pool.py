@@ -1,6 +1,7 @@
 import glob
 import os
 
+import defs
 from temp import TempSensor
 from floatSwitch import FloatSwitch
 from relay import Relay
@@ -9,144 +10,151 @@ from pressureSender import PressureSender
 
 
 class Pool:
-    ON = "ON"
-    OFF = "OFF"
-    UPKEEP = "UPKEEP"
-    FOFF = "FOFF"
 
     def __init__(self, in_ws_q, out_ws_q, out_display_q):
-        self.in_ws_q = in_ws_q
-        self.out_ws_q = out_ws_q
-        self.out_display_q = out_display_q
-        self.target = 37.0
-        self.lower_limit = 36.5
-        self.water_level_target = 70  # Target in cm
-        self.total_temperature = -85
-        self.temp_low = TempSensor("28-0517a04776ff")  # Lower
-        self.low_value = -85
-        self.temp_high = TempSensor("28-000008a5dd2c")  # Upper
-        self.high_value = -85
-        self.temp_ambient = TempSensor("28-031724b16bff")  # Ambient
-        self.ambient_value = -85
-        self.estimate = 0
-        self.heating_state = self.OFF  # ON/OFF/UPKEEP/FOFF
-        self.relay = Relay()
-        self.magneticValve = MagneticValve()
-        self.floatSwitch = FloatSwitch()
-        self.pressureSender = PressureSender()
-        self.water_level = float(-1)
+        self._in_ws_q = in_ws_q
+        self._out_ws_q = out_ws_q
+        self._out_display_q = out_display_q
+        self._target = 37.0
+        self._lower_limit = 36.5
+        self._water_level_target = 70  # Target in cm
+        self._total_temperature = -85
+        self._temp_low = TempSensor("28-0517a04776ff")  # Lower
+        self._low_value = -85
+        self._temp_high = TempSensor("28-000008a5dd2c")  # Upper
+        self._high_value = -85
+        self._temp_ambient = TempSensor("28-031724b16bff")  # Ambient
+        self._ambient_value = -85
+        self._estimate = 0
+        self._heating_state = defs.OFF  # ON/OFF/UPKEEP/FOFF
+        self._next_state = defs.OFF
+        self._relay = Relay()
+        self._magneticValve = MagneticValve()
+        self._floatSwitch = FloatSwitch()
+        self._pressureSender = PressureSender()
+        self._water_level = float(-1)
 
-    def open_valve(self):
-        self.magneticValve.open()
-        return
+    def safe_to_start_burner(self):
+        return self._floatSwitch.get_state() == 1
 
-    def close_valve(self):
-        self.magneticValve.close()
-        return
+    def handle_valve(self):
+        if self.get_water_level() == -1:
+            return
+
+        if self.get_water_level() < self.get_water_level_target():
+            self._magneticValve.open()
+        elif self.get_water_level() >= self.get_water_level_target():
+            self._magneticValve.close()
 
     def get_temp_low(self):
-        if self.low_value is False:
+        if self._low_value is False:
             return False
 
-        return self.low_value
+        return self._low_value
 
     def get_temp_high(self):
 
-        if self.high_value is False:
+        if self._high_value is False:
             return False
 
-        return self.high_value
+        return self._high_value
 
     def get_temp_ambient(self):
 
-        if self.ambient_value is False:
+        if self._ambient_value is False:
             return False
 
-        return self.ambient_value
+        return self._ambient_value
 
     def get_temperatures(self):
-        self.low_value = round(self.temp_low.get_temperature(), 1)
-        self.high_value = round(self.temp_high.get_temperature(), 1)
-        self.ambient_value = round(self.temp_ambient.get_temperature(), 1)
+        self._low_value = round(self._temp_low.get_temperature(), 1)
+        self._high_value = round(self._temp_high.get_temperature(), 1)
+        self._ambient_value = round(self._temp_ambient.get_temperature(), 1)
 
-        if self.low_value == 0:
+        if self._low_value == 0:
             return False
 
-        elif self.high_value == 0:
+        elif self._high_value == 0:
             return False
 
-        elif self.ambient_value == 0:
+        elif self._ambient_value == 0:
             return False
 
         return True
 
     def read_water_level(self):
-        self.water_level = round(
-            float(self.pressureSender.get_water_level(self.high_value)), 1)
+        self._water_level = round(
+            float(self._pressureSender.get_water_level(self._high_value)), 1)
 
     def get_water_level(self):
-        return self.water_level
+        return self._water_level
 
     def get_water_level_target(self):
-        return self.water_level_target
+        return self._water_level_target
 
     def set_water_level_target(self, target):
-        self.water_level_target = int(target)
+        self._water_level_target = int(target)
         return
 
     def get_state(self):
-        return self.heating_state
+        return self._heating_state
 
     def set_state(self, state):
 
-        if state == self.OFF:
-            self.relay.toggle_off()
-            self.heating_state = self.OFF
+        if state == defs.OFF:
+            self._relay.toggle_off()
+            self._heating_state = defs.OFF
             return
 
-        elif state == self.FOFF:
-            self.relay.toggle_off()
-            self.heating_state = self.FOFF
+        elif state == defs.FOFF:
+            self._relay.toggle_off()
+            self._heating_state = defs.FOFF
             return
 
-        elif state == self.ON:
-            self.relay.toggle_on()
-            self.heating_state = self.ON
+        elif state == defs.ON:
+            self._relay.toggle_on()
+            self._heating_state = defs.ON
             return
 
-        elif state == self.UPKEEP:
-            self.relay.toggle_off()
-            self.heating_state = self.UPKEEP
+        elif state == defs.UPKEEP:
+            self._relay.toggle_off()
+            self._heating_state = defs.UPKEEP
             return
 
     def get_target(self):
-        return self.target
+        return self._target
 
     def set_target(self, target):
-        self.target = float(target)
+        self._target = float(target)
 
     def get_lower_limit(self):
-        return self.lower_limit
+        return self._lower_limit
 
     def set_lower_limit(self, lower_limit):
-        self.lower_limit = float(lower_limit)
+        self._lower_limit = float(lower_limit)
 
     def get_estimate(self):
-        return self.estimate
+        return self._estimate
 
     def set_estimate(self, estimate):
-        self.estimate = int(estimate)
+        self._estimate = int(estimate)
+
+    def get_next_state(self):
+        return self._next_state
+
+    def set_next_state(self, next_state):
+        self._next_state = next_state
 
     def data_in(self):
-        if not self.in_ws_q.empty():
-            data_in = self.in_ws_q.get()
+        if not self._in_ws_q.empty():
+            data_in = self._in_ws_q.get()
 
-            if self.get_state() == self.FOFF:
-                if data_in["warming_phase"] == self.ON:
-                    self.set_state(self.ON)
+            if self.get_state() == defs.FOFF:
+                if data_in["warming_phase"] == defs.ON:
+                    self._next_state = defs.ON
 
-            elif data_in["warming_phase"] == self.FOFF:
-                self.set_state(self.FOFF)
+            elif data_in["warming_phase"] == defs.FOFF:
+                self._next_state = defs.FOFF
 
             self.set_target(data_in["target"])
             self.set_lower_limit(data_in["low_limit"])
@@ -164,7 +172,7 @@ class Pool:
                 "water_level": self.get_water_level(),
                 "water_level_target": self.get_water_level_target()}
 
-        if self.out_ws_q.empty():
-            self.out_ws_q.put(data)
-        if self.out_display_q.empty():
-            self.out_display_q.put(data)
+        if self._out_ws_q.empty():
+            self._out_ws_q.put(data)
+        if self._out_display_q.empty():
+            self._out_display_q.put(data)
