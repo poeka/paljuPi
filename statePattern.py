@@ -7,10 +7,13 @@ import defs
 class Context:
 
     def __init__(self):
-        self.state = Off()
+        self._state = Off()
+
+    def set_state(self, state):
+        self._state = state
 
     def work(self, pool):
-        self.state.handle(self, pool)
+        self._state.handle(self, pool)
 
 
 class State(metaclass=abc.ABCMeta):
@@ -35,18 +38,18 @@ class On(State):
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")
             pool.set_state(defs.FOFF)
-            context.state = Foff()
+            context.set_state(Foff())
             return
 
-        if pool.floatSwitch.get_state() == 0:
+        if not pool.safe_to_start_burner():
             pool.set_state(defs.OFF)
-            context.state = Off()
+            context.set_state(Off())
             return
 
-        elif pool.floatSwitch.get_state() == 1:
+        else:
             if pool.get_temp_high() >= pool.get_target():
                 pool.set_state(defs.UPKEEP)
-                context.state = Upkeep()
+                context.set_state(Upkeep())
                 return
 
 
@@ -61,15 +64,12 @@ class Off(State):
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")
             pool.set_state(defs.FOFF)
-            context.state = Foff()
+            context.set_state(Foff())
             return
 
-        if pool.floatSwitch.get_state() == 0:
-            return
-
-        elif pool.floatSwitch.get_state() == 1:
+        elif pool.safe_to_start_burner():
             pool.set_state(defs.ON)
-            context.state = On()
+            context.set_state(On())
             return
 
 
@@ -84,18 +84,18 @@ class Upkeep(State):
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")
             pool.set_state(defs.FOFF)
-            context.state = Foff()
+            context.set_state(Foff())
             return
 
-        if pool.floatSwitch.get_state() == 0:
+        if not pool.safe_to_start_burner():
             pool.set_state(defs.OFF)
-            context.state = Off()
+            context.set_state(Off())
             return
 
-        elif pool.floatSwitch.get_state() == 1:
+        else:
             if pool.get_temp_high() <= pool.get_lower_limit():
                 pool.set_state(defs.ON)
-                context.state = On()
+                context.set_state(On())
                 return
 
 
@@ -108,8 +108,12 @@ class Foff(State):
         pool.handle_valve()
 
         if pool.get_next_state() == defs.ON:
-            if pool.floatSwitch.get_state() == 1:
+            if pool.safe_to_start_burner():
                 pool.set_next_state("")
                 pool.set_state(defs.ON)
-                context.state = On()
+                context.set_state(On())
                 return
+            else:
+                pool.set_next_state("")
+                pool.set_state(defs.OFF)
+                context.set_state(Off())
