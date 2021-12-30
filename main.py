@@ -45,6 +45,7 @@ while True:
         context.work(pool)
         pool.get_temperatures()
         pool.read_water_level()
+        pool.filter_anti_freeze()
 
         pool.data_in()   # Handle the incoming data
         pool.data_out()  # Fill the outgoing queues with new data (if empty)

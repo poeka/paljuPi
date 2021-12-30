@@ -34,6 +34,7 @@ class On(State):
 
     def handle(self, context, pool):
         pool.handle_valve()
+        pool.start_filter_pump():
 
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")

@@ -1,10 +1,12 @@
 import glob
 import os
+import time
 
 import defs
 from temp import TempSensor
 from floatSwitch import FloatSwitch
 from relay import Relay
+from filter import Filter
 from magneticValve import MagneticValve
 from pressureSender import PressureSender
 
@@ -29,6 +31,9 @@ class Pool:
         self._heating_state = defs.OFF  # ON/OFF/UPKEEP/FOFF
         self._next_state = defs.OFF
         self._relay = Relay()
+        self._filter = Filter()
+        self._filter_pump_last_run = 0
+        self._filter_anti_freeze_cycle = False
         self._magneticValve = MagneticValve()
         self._floatSwitch = FloatSwitch()
         self._pressureSender = PressureSender()
@@ -36,6 +41,28 @@ class Pool:
 
     def safe_to_start_burner(self):
         return self._floatSwitch.get_state() == 1
+
+    def filter_anti_freeze(self):
+        if not self._filter_anti_freeze_cycle and self._heating_state != defs.ON:
+            # Anti freeze off, burner off
+            if self.get_temp_ambient() < 0 and int(time.time()) > self._filter_pump_last_run + 300:
+                self._filter_anti_freeze_cycle = True
+                self._filter_pump_last_run = int(time.time())
+                self.start_filter_pump()
+        elif self._filter_anti_freeze_cycle and self._heating_state != defs.ON
+            # Anti freeze on, burner off
+            if int(time.time()) > self._filter_pump_last_run + 15:
+                self._filter_anti_freeze_cycle = False
+                self._filter_pump_last_run = int(time.time())
+                self.stop_filter_pump()
+
+    def start_filter_pump(self):
+        if self.get_water_level() > 70:
+            self._filter.toggle_on()
+            self._filter_pump_last_run = int(time.time())
+
+    def stop_filter_pump(self):
+        self._filter.toggle_off()
 
     def handle_valve(self):
         if self.get_water_level() == -1:
