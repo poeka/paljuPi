@@ -13,6 +13,7 @@ from statePattern import Context, On, Off, Upkeep, Foff
 config = configparser.ConfigParser()
 config.read('/home/pi/Documents/PaljuPi/config.ini')
 url = config['server']['url']
+token = config['server']['token']
 
 #date = datetime.datetime.now().strftime("%Y-%m-%d")
 # path = config['logfile']['path'] + '/' + \
@@ -31,7 +32,7 @@ out_ws_q = queue.Queue(1)
 
 pool = Pool(in_ws_q, out_ws_q, out_display_q)
 
-socket = SocketThread(url, in_ws_q, out_ws_q)
+socket = SocketThread(url, token, in_ws_q, out_ws_q)
 socket.start()
 
 display = DisplayThread(out_display_q)
