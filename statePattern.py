@@ -34,7 +34,7 @@ class On(State):
 
     def handle(self, context, pool):
         pool.handle_valve()
-        pool.start_filter_pump():
+        pool.start_filter_pump()
 
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")
@@ -61,6 +61,7 @@ class Off(State):
 
     def handle(self, context, pool):
         pool.handle_valve()
+        pool.stop_filter_pump()
 
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")
@@ -81,6 +82,7 @@ class Upkeep(State):
 
     def handle(self, context, pool):
         pool.handle_valve()
+        pool.stop_filter_pump()
 
         if pool.get_next_state() == defs.FOFF:
             pool.set_next_state("")

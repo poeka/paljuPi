@@ -17,8 +17,8 @@ class Pool:
         self._in_ws_q = in_ws_q
         self._out_ws_q = out_ws_q
         self._out_display_q = out_display_q
-        self._target = 37.0
-        self._lower_limit = 36.5
+        self._target = 36.0
+        self._lower_limit = 35.0
         self._water_level_target = 70  # Target in cm
         self._total_temperature = -85
         self._temp_low = TempSensor("28-0517a04776ff")  # Lower
@@ -49,7 +49,7 @@ class Pool:
                 self._filter_anti_freeze_cycle = True
                 self._filter_pump_last_run = int(time.time())
                 self.start_filter_pump()
-        elif self._filter_anti_freeze_cycle and self._heating_state != defs.ON
+        elif self._filter_anti_freeze_cycle and self._heating_state != defs.ON:
             # Anti freeze on, burner off
             if int(time.time()) > self._filter_pump_last_run + 15:
                 self._filter_anti_freeze_cycle = False
