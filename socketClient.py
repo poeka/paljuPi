@@ -80,6 +80,7 @@ class SocketThread(threading.Thread):
                         "target": ("input_number", "palju_target_temp"),
                         "low_limit": ("input_number", "palju_low_temp_limit"),
                         "warming_phase": ("input_text", "palju_status"),
+                        "temp_ambient": ("input_boolean", "palju_heating")
                     }
 
                     for key, (domain, entity) in mapping.items():
@@ -90,7 +91,9 @@ class SocketThread(threading.Thread):
                             continue
 
                         if domain == "input_boolean":
-                            state = "on" if value else "off"
+                            state = "off" if self.data["warming_phase"] == "FOFF" else "on"
+                            #state = "off" if value == "FOFF" else "on"
+                            entity = "palju_heating"
                         else:
                             # Home Assistant expects strings for input_number/text
                             state = str(value)
@@ -102,12 +105,16 @@ class SocketThread(threading.Thread):
                             "state": state,
                         })
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(5)
 
     async def receive_loop(self):
         async for msg in self.ws:
             data = json.loads(msg)
             if data.get("type") == "event":
+                # empty outgoing data in case receiving updates from HA
+                if self._out_ws_q.full():
+                    tmp = self._out_ws_q.get()
+
                 self.handle_event(data["event"])
 
     def handle_event(self, event):
@@ -124,7 +131,7 @@ class SocketThread(threading.Thread):
         elif entity_id == "input_text.palju_status":
             self.data["warming_phase"] = new_state
         elif entity_id == "input_boolean.palju_heating":
-            self.data["warming_phase"] = "ON" if new_state == "on" else "OFF"
+            self.data["warming_phase"] = "FOFF" if new_state == "off" else "ON"
         # Put updated data into queue
         if not self._in_ws_q.full():
             self._in_ws_q.put(self.data.copy())
@@ -152,11 +159,15 @@ class SocketThread(threading.Thread):
         # Add other command types if needed
 
     async def connect_and_run(self):
-        await self.connect()
-        await self.subscribe()
-        send_task = asyncio.create_task(self.send_loop())
-        receive_task = asyncio.create_task(self.receive_loop())
-        await asyncio.gather(send_task, receive_task)
+        try:
+            await self.connect()
+            await self.subscribe()
+            send_task = asyncio.ensure_future(self.send_loop())
+            receive_task = asyncio.ensure_future(self.receive_loop())
+            await asyncio.gather(send_task, receive_task)
+        finally:
+            if self.ws:
+                await self.ws.close()
 
     def run(self):
         while self._isRunning:
