@@ -1,8 +1,7 @@
-import asyncio
 import json
+import requests
 import threading
 import time
-import websockets
 
 
 class SocketThread(threading.Thread):
@@ -11,11 +10,13 @@ class SocketThread(threading.Thread):
         threading.Thread.__init__(self)
         self._in_ws_q = in_ws_q
         self._out_ws_q = out_ws_q
-        self._ha_url = ha_url
+        self._base_url = ha_url
         self._access_token = access_token
+        self._headers = {
+            "Authorization": f"Bearer {self._access_token}",
+            "Content-Type": "application/json"
+        }
         self._isRunning = True
-        self.ws = None
-        self.msg_id = 1
         self.data = {
             "temp_low": None,
             "temp_high": None,
@@ -29,153 +30,85 @@ class SocketThread(threading.Thread):
             "heating": None
         }
 
-    async def connect(self):
-        self.ws = await websockets.connect(self._ha_url)
-        # HA sends auth_required
-        msg = json.loads(await self.ws.recv())
-        print("HA:", msg)
-        if msg["type"] != "auth_required":
-            raise Exception("Unexpected auth step")
-        # Send token
-        await self.ws.send(json.dumps({
-            "type": "auth",
-            "access_token": self._access_token
-        }))
-        msg = json.loads(await self.ws.recv())
-        print("Auth result:", msg)
-        if msg["type"] != "auth_ok":
-            raise Exception("Authentication failed")
-        print("Connected to Home Assistant")
+    def send_update(self, data):
+        # Update self.data with the incoming data
+        self.data.update(data)
+        
+        # Bundle all sensor data into a single JSON payload
+        sensor_bundle = {}
+        bundled_fields = ["temp_low", "temp_high", "temp_ambient", "warming_phase", 
+                          "target", "low_limit", "estimate", "water_level", "water_level_target"]
+        
+        for field in bundled_fields:
+            if field in data and data[field] is not None:
+                sensor_bundle[field] = data[field]
 
-    async def subscribe(self):
-        payload = {
-            "id": self.msg_id,
-            "type": "subscribe_trigger",
-            "trigger": {
-                "platform": "state",
-                "entity_id": [
-                    "input_text.palju_status",
-                    "input_number.palju_current_temp",
-                    "input_number.palju_target_temp",
-                    "input_number.palju_low_temp_limit",
-                    "input_boolean.palju_heating"
-                ]
+        if sensor_bundle:
+            url = f"{self._base_url}services/input_text/set_value"
+            service_data = {
+                "entity_id": "input_text.palju_sensor_data",
+                "value": json.dumps(sensor_bundle)
             }
-        }
-        self.msg_id += 1
-        await self.ws.send(json.dumps(payload))
+            try:
+                start_time = time.time()
+                response = requests.post(url, headers=self._headers, json=service_data, timeout=30)
+                end_time = time.time()
+                print(f"POST took {end_time - start_time:.2f} seconds")
+                if response.status_code != 200:
+                    print(f"Failed to send sensor data: {response.status_code} - {response.text}")
+            except requests.RequestException as e:
+                print(f"Error sending sensor data: {e}")
 
-    async def send_loop(self):
-        while self._isRunning:
-            if not self._out_ws_q.empty():
-                msg = self._out_ws_q.get()
-
-                # Otherwise, assume this is the full data dict and translate it into HA service calls
-                if isinstance(msg, dict):
-                    # Update self.data with the incoming data
-                    self.data.update(msg)
-                    
-                    mapping = {
-                        "temp_high": ("input_number", "palju_current_temp"),
-                        "target": ("input_number", "palju_target_temp"),
-                        "low_limit": ("input_number", "palju_low_temp_limit"),
-                        "warming_phase": ("input_text", "palju_status"),
-                        "temp_ambient": ("input_boolean", "palju_heating")
-                    }
-
-                    for key, (domain, entity) in mapping.items():
-                        if key not in msg:
-                            continue
-                        value = msg[key]
-                        if value is None:
-                            continue
-
-                        if domain == "input_boolean":
-                            state = "off" if self.data["warming_phase"] == "FOFF" else "on"
-                            #state = "off" if value == "FOFF" else "on"
-                            entity = "palju_heating"
-                        else:
-                            # Home Assistant expects strings for input_number/text
-                            state = str(value)
-
-                        await self.send_command({
-                            "type": "set_state",
-                            "domain": domain,
-                            "entity": entity,
-                            "state": state,
-                        })
-
-            await asyncio.sleep(5)
-
-    async def receive_loop(self):
-        async for msg in self.ws:
-            data = json.loads(msg)
-            if data.get("type") == "event":
-                # empty outgoing data in case receiving updates from HA
-                if self._out_ws_q.full():
-                    tmp = self._out_ws_q.get()
-
-                self.handle_event(data["event"])
-
-    def handle_event(self, event):
-        trigger = event["variables"]["trigger"]
-        entity_id = trigger["entity_id"]
-        new_state = trigger["to_state"]["state"]
-        # Update self.data
-        if entity_id == "input_number.palju_current_temp":
-            self.data["temp_high"] = float(new_state) if new_state else None
-        elif entity_id == "input_number.palju_target_temp":
-            self.data["target"] = float(new_state) if new_state else None
-        elif entity_id == "input_number.palju_low_temp_limit":
-            self.data["low_limit"] = float(new_state) if new_state else None
-        elif entity_id == "input_text.palju_status":
-            self.data["warming_phase"] = new_state
-        elif entity_id == "input_boolean.palju_heating":
-            self.data["warming_phase"] = "FOFF" if new_state == "off" else "ON"
-        # Put updated data into queue
+    def fetch_states(self):
+        # Fetch the control data entity
+        try:
+            url = f"{self._base_url}states/sensor.palju_control_data"
+            start_time = time.time()
+            response = requests.get(url, headers=self._headers, timeout=30)
+            end_time = time.time()
+            print(f"GET took {end_time - start_time:.2f} seconds")
+            if response.status_code == 200:
+                state = response.json()["state"]
+                if state and state != "unknown":
+                    try:
+                        control_data = json.loads(state)
+                        # Extract control fields
+                        if "target" in control_data and control_data["target"] is not None:
+                            self.data["target"] = control_data["target"]
+                        if "low_limit" in control_data and control_data["low_limit"] is not None:
+                            self.data["low_limit"] = control_data["low_limit"]
+                        if "heating" in control_data and control_data["heating"] is not None:
+                            # Convert heating to warming_phase (handle both boolean and string)
+                            heating_value = control_data["heating"]
+                            if heating_value == "on" or heating_value is True:
+                                self.data["warming_phase"] = "ON"
+                            elif heating_value == "off" or heating_value is False:
+                                self.data["warming_phase"] = "FOFF"
+                    except json.JSONDecodeError:
+                        print("Failed to parse palju_sensor_control_data JSON")
+            else:
+                print(f"Failed to fetch palju_sensor_control_data: {response.status_code}")
+        except requests.RequestException as e:
+            print(f"Error fetching palju_sensor_control_data: {e}")
+        
+        # Put a copy of current self.data to the queue
         if not self._in_ws_q.full():
             self._in_ws_q.put(self.data.copy())
-
-    async def send_command(self, cmd):
-        if cmd["type"] == "set_state":
-            domain = cmd["domain"]
-            entity = cmd["entity"]
-            state = cmd["state"]
-            service = "set_value"
-            if domain == "input_boolean":
-                service = "turn_on" if state == "on" else "turn_off"
-            service_data = {"entity_id": f"{domain}.{entity}"}
-            if domain != "input_boolean":
-                service_data["value"] = state
-            payload = {
-                "id": self.msg_id,
-                "type": "call_service",
-                "domain": domain,
-                "service": service,
-                "service_data": service_data
-            }
-            self.msg_id += 1
-            await self.ws.send(json.dumps(payload))
-        # Add other command types if needed
-
-    async def connect_and_run(self):
-        try:
-            await self.connect()
-            await self.subscribe()
-            send_task = asyncio.ensure_future(self.send_loop())
-            receive_task = asyncio.ensure_future(self.receive_loop())
-            await asyncio.gather(send_task, receive_task)
-        finally:
-            if self.ws:
-                await self.ws.close()
 
     def run(self):
         while self._isRunning:
             try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(self.connect_and_run())
-                loop.close()
+                # Fetch states periodically
+                self.fetch_states()
+
+                # Send data if any
+                if not self._out_ws_q.empty():
+                    msg = self._out_ws_q.get()
+                    if isinstance(msg, dict):
+                        self.send_update(msg)
+                
+                time.sleep(5)  # Poll every 5 seconds
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"Error in REST client: {e}")
                 time.sleep(5)  # Wait before retrying
+
